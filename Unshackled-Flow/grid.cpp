@@ -1,40 +1,73 @@
 #include "grid.hpp"
 
-void grid::populaterec(grid * topleftcorner, int height, int width)
+void grid::populate(grid * topleftcorner, int height, int width)
 {
-	grid* curcell = topleftcorner;
-	grid* firstcell = curcell;
-	// Première ligne :
+	grid* firstcell = topleftcorner;
+	for (int y = 0; y < height; ++y)
+	{
+		addrow(firstcell, width);
+		if(y < height - 1)
+		{
+			firstcell->bottom = new grid();
+			firstcell = firstcell->bottom;
+		}
+	}
+}
+
+void grid::addrow(grid* firstleftcell, int width)
+{
+	grid* curcell = firstleftcell;
 	for (int x = 0; x < width - 1; ++x)
 	{
 		curcell->right = new grid();
 		curcell->right->left = curcell;
-		curcell = curcell->right;
-	}
-	for (int y = 0; y < height - 1; ++y)
-	{		
-		curcell = firstcell;
-		while (nullptr != curcell)
+		if (nullptr != curcell->top && nullptr != curcell->top->right)
 		{
-			curcell->down = new grid();
-			curcell->down->up = curcell;
-			curcell->down->right = new grid();
-			curcell->down->right->up = curcell->right;
-			curcell->down->right->left = curcell;
-			curcell = curcell->right;
+			curcell->right->top = curcell->top->right;
+			curcell->top->right->bottom = curcell->right;
 		}
-		firstcell = firstcell->down;
+		curcell = curcell->right;
 	}
 }
 
 grid::~grid()
 {
-	//if (nullptr != up) delete up;
+	//if (nullptr != top) delete top;
 	//if (nullptr != left) delete left;
-	if (nullptr != down) delete down;
 	if (nullptr != right) delete right;
+	if (nullptr != bottom) delete bottom;
 #ifdef _DEBUG
 	static unsigned int cell = 0;
 	std::cout << "cellule(s) détruite(s) : " << ++cell << std::endl;
 #endif // _DEBUG
+}
+
+grid* grid::operator++()
+{
+	if (nullptr != left)
+		return left;
+	else if (nullptr != this->right)
+	{
+		grid* cur = this;
+		while (nullptr != cur->right)
+			cur = cur->right;
+		return cur->bottom;
+	}
+	else
+		return nullptr;
+}
+
+grid* grid::operator--()
+{
+	if (nullptr != right)
+		return right;
+	else if (nullptr != this->left)
+	{
+		grid* cur = this;
+		while (nullptr != cur->left)
+			cur = cur->left;
+		return cur->top;
+	}
+	else
+		return nullptr;
 }

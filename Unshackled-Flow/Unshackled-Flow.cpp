@@ -8,24 +8,28 @@ int main()
 {
     std::cout << "Hello World!\n";
     grid* topleftcorner = new grid();
-    grid::populaterec(topleftcorner, 10, 15);
+    grid::populate(topleftcorner, 10, 15);
     grid* curcell = topleftcorner;
 #ifdef _DEBUG
-    int x = 0;
-    int y = 0;
+    int x = 1;
+    int y = 1;
     curcell = topleftcorner;
-	while (nullptr != curcell->right)
-	{
-		++x;
-		curcell = curcell->right;
-	}
-	curcell = topleftcorner->down;
-    while (nullptr != curcell->down)
+    while (nullptr != curcell)
     {
+        grid* firstin = curcell;
+        std::cout << y << std::endl;
+        x = 1;
+        while (nullptr != curcell)
+        {
+            std::cout << x << " ";
+            ++x;
+            curcell = curcell->right;
+        }
+        std::cout << std::endl;
+        curcell = firstin->bottom;
         ++y;
-        curcell = curcell->down;
     }
-    std::cout << x << " " << y << std::endl;
+    std::cout << std::endl;
 #endif // _DEBUG
 
     delete topleftcorner;

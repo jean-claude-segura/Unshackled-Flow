@@ -5,13 +5,16 @@
 
 class grid {
 public:
-	static void populaterec(grid* topleftcorner, int height, int width);
+	static void populate(grid* topleftcorner, int height, int width);
+	static void addrow(grid* topleftcorner, int width);
 public:
 	grid() {};
 	~grid();
-	grid* up = nullptr;
+	grid* top = nullptr;
 	grid* left = nullptr;
-	grid* down = nullptr;
+	grid* bottom = nullptr;
 	grid* right = nullptr;
 	unsigned int colour = 0;
+	grid* operator++();
+	grid* operator--();
 };
