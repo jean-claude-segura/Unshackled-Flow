@@ -10,9 +10,10 @@
 
 int main()
 {
-    grid* topleftcorner = new grid();
-    grid::init(topleftcorner, 10, 15);
-    grid::populate(topleftcorner, 10);
+    //grid* topleftcorner = new grid();
+    //grid::init(topleftcorner, 10, 15);
+    //grid::populate(topleftcorner, 10);
+    grid* topleftcorner = new grid(10, 15, 10);
     grid* curcell = topleftcorner;
 #ifdef _DEBUG
     //int x = 1;

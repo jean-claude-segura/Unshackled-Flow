@@ -55,6 +55,12 @@ void grid::addrow(grid* firstleftcell, int width)
 	}
 }
 
+grid::grid(int height, int width, int colours)
+{
+	init(this, height, width);
+	populate(this, colours);
+}
+
 grid::~grid()
 {
 	//if (nullptr != top) delete top;
