@@ -59,11 +59,19 @@ grid::~grid()
 {
 	//if (nullptr != top) delete top;
 	//if (nullptr != left) delete left;
-	if (nullptr != right) delete right;
-	if (nullptr != bottom) delete bottom;
+	if (nullptr != right) 
+	{
+		delete right;
+		right = nullptr;
+	}
+	if (nullptr != bottom)
+	{
+		delete bottom;
+		bottom = nullptr;
+	}
 #ifdef _DEBUG
-	static unsigned int cell = 0;
-	std::cout << "delete count : " << ++cell << std::endl;
+	//static unsigned int cell = 0;
+	//std::cout << "delete count : " << ++cell << std::endl;
 #endif // _DEBUG
 }
 
@@ -73,7 +81,7 @@ grid* grid::operator++()
 		return right;
 	else if (nullptr != this->left)
 	{
-		grid* cur = this;
+		grid* cur = this->left;
 		while (nullptr != cur->left)
 			cur = cur->left;
 		return cur->bottom;
@@ -88,7 +96,7 @@ grid* grid::operator--()
 		return left;
 	else if (nullptr != this->right)
 	{
-		grid* cur = this;
+		grid* cur = this->right;
 		while (nullptr != cur->right)
 			cur = cur->right;
 		return cur->top;
