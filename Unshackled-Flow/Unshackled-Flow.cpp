@@ -8,7 +8,8 @@ int main()
 {
     std::cout << "Hello World!\n";
     grid* topleftcorner = new grid();
-    grid::populate(topleftcorner, 10, 15);
+    grid::init(topleftcorner, 10, 15);
+    grid::populate(topleftcorner, 10);
     grid* curcell = topleftcorner;
 #ifdef _DEBUG
     int x = 1;
@@ -22,6 +23,25 @@ int main()
         while (nullptr != curcell)
         {
             std::cout << x << " ";
+            ++x;
+            curcell = curcell->right;
+        }
+        std::cout << std::endl;
+        curcell = firstin->bottom;
+        ++y;
+    }
+    std::cout << std::endl;
+
+    x = 1;
+    y = 1;
+    curcell = topleftcorner;
+    while (nullptr != curcell)
+    {
+        grid* firstin = curcell;
+        x = 1;
+        while (nullptr != curcell)
+        {
+            std::cout << "[" << curcell->colour << "]";
             ++x;
             curcell = curcell->right;
         }
