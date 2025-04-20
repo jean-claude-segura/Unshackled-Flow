@@ -119,7 +119,50 @@ void GraphicBoard::Refresh()
 	DrawGrid(y, x);
 }
 
-void DrawCircle(SDL_Renderer* renderer, int32_t xOrg, int32_t yOrg, double radius)
+void DrawCircleSub(SDL_Renderer* renderer, std::vector <std::pair<int, int>> & vIn)
+{
+	std::vector <std::pair<int, int>>::iterator it = vIn.begin();
+	while (it != vIn.end())
+	{
+		const auto itprev = it;
+		++it;
+		if (it != vIn.end())
+			SDL_RenderDrawLine(renderer, itprev->first, itprev->second, it->first, it->second);
+	}
+}
+
+void DrawCircle(SDL_Renderer* renderer, int xOrg, int yOrg, double radius)
+{
+	std::vector <std::pair<int, int>> vTopLeft;
+	std::vector <std::pair<int, int>> vBottomLeft;
+	std::vector <std::pair<int, int>> vTopRight;
+	std::vector <std::pair<int, int>> vBottomRight;
+	for (double y = 1; y >= 0; y -= 0.01)
+	{
+		double alpha = asin(y);
+		double xp = cos(alpha) * radius;
+		double yp = y * radius;
+
+		/**/
+		SDL_RenderDrawPoint(renderer, xOrg - xp, yOrg + yp);
+		SDL_RenderDrawPoint(renderer, xOrg + xp, yOrg + yp);
+		SDL_RenderDrawPoint(renderer, xOrg - xp, yOrg - yp);
+		SDL_RenderDrawPoint(renderer, xOrg + xp, yOrg - yp);
+		/**/
+		vTopLeft.emplace_back(std::pair(xOrg - xp, yOrg + yp));
+		vBottomLeft.emplace_back(std::pair(xOrg - xp, yOrg - yp));
+		vTopRight.emplace_back(std::pair(xOrg + xp, yOrg + yp));
+		vBottomRight.emplace_back(std::pair(xOrg + xp, yOrg - yp));
+		/**/
+	}
+
+	DrawCircleSub(renderer, vTopLeft);
+	DrawCircleSub(renderer, vBottomLeft);
+	DrawCircleSub(renderer, vTopRight);
+	DrawCircleSub(renderer, vBottomRight);
+}
+
+void FillCircle(SDL_Renderer* renderer, int xOrg, int yOrg, double radius)
 {
 	for (double y = 1; y >= 0; y -= 0.01)
 	{
@@ -129,13 +172,6 @@ void DrawCircle(SDL_Renderer* renderer, int32_t xOrg, int32_t yOrg, double radiu
 
 		SDL_RenderDrawLine(renderer, xOrg - xp, yOrg + yp, xOrg + xp, yOrg + yp);
 		SDL_RenderDrawLine(renderer, xOrg - xp, yOrg - yp, xOrg + xp, yOrg - yp);
-
-		/*
-		SDL_RenderDrawPoint(renderer, xOrg - xp, yOrg + yp);
-		SDL_RenderDrawPoint(renderer, xOrg + xp, yOrg + yp);
-		SDL_RenderDrawPoint(renderer, xOrg - xp, yOrg - yp);
-		SDL_RenderDrawPoint(renderer, xOrg + xp, yOrg - yp);
-		*/
 	}
 }
 
@@ -162,7 +198,7 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 	int curWidth = gWidth * side;
 	int curHeight = gHeight * side;
 	int xDec = (Width - curWidth) / 2;
-	int yDec = (clientHeight - curHeight) / 2;
+	int yDec = (Height - curHeight) / 2;
 
 	int xOrg = xDec;
 	int yOrg = yDec;
@@ -201,6 +237,7 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 	mColours[13] = { 255,0,255 }; // D : BRIGHT_MAGENTA
 	mColours[14] = { 255,255,0 }; // E : BRIGHT_YELLOW 
 	mColours[15] = { 255,255,255}; // F : WHITE 
+
 	while (nullptr != curcell)
 	{
 		auto firstin = curcell;
@@ -209,7 +246,11 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 		{			
 			if (0 != curcell->colour)
 			{
-				const auto colour = mColours.find(curcell->colour);
+				int newcolour = curcell->colour + 4;
+				if (newcolour == 8) newcolour = 15;
+				if (newcolour == 7) newcolour = 4;
+				if (newcolour == 6) newcolour = 2;
+				const auto colour = mColours.find(newcolour);
 				SDL_SetRenderDrawColor(renderer,
 					std::get<0>(colour->second), // red
 					std::get<1>(colour->second), // green
@@ -219,7 +260,7 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 				double radius = side / 2. - 2.;
 				int xOrg = x * side + xDec + side / 2 + 1;
 				int yOrg = y * side + yDec + side / 2 + 1;
-				DrawCircle(renderer, xOrg, yOrg, radius);
+				FillCircle(renderer, xOrg, yOrg, radius);
 			}
 			else
 			{
