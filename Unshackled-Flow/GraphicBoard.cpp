@@ -181,15 +181,26 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 		xOrg += side;
 	}
 
-	SDL_SetRenderDrawColor(renderer,
-		255, // red
-		0, // green
-		0, // blue
-		255); // Alpha
-
 	int x = 0;
 	int y = 0;
 	auto curcell = Grille;
+	std::map<int, std::tuple<int, int, int>> mColours;
+	mColours[0] = { 0,0,0 }; // 0 : BLACK
+	mColours[1] = { 0,0,139 }; // 1 : DARK_BLUE 
+	mColours[2] = { 0,139,0 }; // 2 : DARK_GREEN 
+	mColours[3] = { 0,139,139 }; // 3 : DARK_CYAN
+	mColours[4] = { 139,0,0 }; // 4 : DARK_RED 
+	mColours[5] = { 139,0,139 }; // 5 : DARK_MAGENTA
+	mColours[6] = { 139,139,0 }; // 6 : DARK_YELLOW  (rgb(139, 128, 0))
+	mColours[7] = { 139,139,139 }; // 7 : DARK_WHITE
+	mColours[8] = { 34,32,36 }; // 8 : BRIGHT_BLACK 
+	mColours[9] = { 0,0,255 }; // 9 : BRIGHT_BLUE 
+	mColours[10] = { 0,255,0 }; // A : BRIGHT_GREEN 
+	mColours[11] = { 0,255,255 }; // B : BRIGHT_CYAN 
+	mColours[12] = { 255,0,0 }; // C : BRIGHT_RED 
+	mColours[13] = { 255,0,255 }; // D : BRIGHT_MAGENTA
+	mColours[14] = { 255,255,0 }; // E : BRIGHT_YELLOW 
+	mColours[15] = { 255,255,255}; // F : WHITE 
 	while (nullptr != curcell)
 	{
 		auto firstin = curcell;
@@ -198,6 +209,13 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 		{			
 			if (0 != curcell->colour)
 			{
+				const auto colour = mColours.find(curcell->colour);
+				SDL_SetRenderDrawColor(renderer,
+					std::get<0>(colour->second), // red
+					std::get<1>(colour->second), // green
+					std::get<2>(colour->second), // blue
+					255); // Alpha
+
 				double radius = side / 2. - 2.;
 				int xOrg = x * side + xDec + side / 2 + 1;
 				int yOrg = y * side + yDec + side / 2 + 1;

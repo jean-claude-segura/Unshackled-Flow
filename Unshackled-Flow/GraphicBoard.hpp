@@ -10,6 +10,7 @@
 #include <iostream>
 #include "grid.hpp"
 #include "math.h"
+#include <map>
 
 class GraphicBoard {
 private:
