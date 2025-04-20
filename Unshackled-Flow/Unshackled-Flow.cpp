@@ -13,15 +13,16 @@ int main()
     //grid* topleftcorner = new grid();
     //grid::init(topleftcorner, 10, 15);
     //grid::populate(topleftcorner, 10);
-    grid* topleftcorner = new grid(10, 15, 10);
-    grid* curcell = topleftcorner;
+    const auto topleftcorner = std::make_unique<const grid>(10, 15, 10);
+    //grid* topleftcorner = new grid(10, 15, 10);
 #ifdef _DEBUG
+    auto curcell = topleftcorner.get();
+
     //int x = 1;
     //int y = 1;
-    //curcell = topleftcorner;
     //while (nullptr != curcell)
     //{
-    //    grid* firstin = curcell;
+    //    auto firstin = curcell;
     //    std::cout << y << std::endl;
     //    x = 1;
     //    while (nullptr != curcell)
@@ -36,10 +37,11 @@ int main()
     //}
     //std::cout << std::endl;
 
-    curcell = topleftcorner;
+    //curcell = topleftcorner.get();
+
     while (nullptr != curcell)
     {
-        grid* firstin = curcell;
+        auto firstin = curcell;
         while (nullptr != curcell)
         {
             std::cout << "[";
@@ -65,16 +67,5 @@ int main()
     std::cout << std::endl;
 #endif // _DEBUG
 
-    delete topleftcorner;
+    //delete topleftcorner;
 }
-
-// Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
-// Déboguer le programme : F5 ou menu Déboguer > Démarrer le débogage
-
-// Astuces pour bien démarrer : 
-//   1. Utilisez la fenêtre Explorateur de solutions pour ajouter des fichiers et les gérer.
-//   2. Utilisez la fenêtre Team Explorer pour vous connecter au contrôle de code source.
-//   3. Utilisez la fenêtre Sortie pour voir la sortie de la génération et d'autres messages.
-//   4. Utilisez la fenêtre Liste d'erreurs pour voir les erreurs.
-//   5. Accédez à Projet > Ajouter un nouvel élément pour créer des fichiers de code, ou à Projet > Ajouter un élément existant pour ajouter des fichiers de code existants au projet.
-//   6. Pour rouvrir ce projet plus tard, accédez à Fichier > Ouvrir > Projet et sélectionnez le fichier .sln.
