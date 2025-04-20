@@ -1,8 +1,8 @@
 #ifdef _DEBUG
 #include <iostream>
+#endif // _DEBUG
 #include <vector>
 #include <random>
-#endif // _DEBUG
 
 
 class grid {
@@ -12,6 +12,8 @@ private:
 	static void addrow(grid* topleftcorner, int width);
 private:
 	grid() {};
+	void populate(int colours);
+	void init(int height, int width);
 public:
 	grid(int height, int width, int colours);
 	~grid();

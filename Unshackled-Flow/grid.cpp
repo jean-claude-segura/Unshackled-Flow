@@ -55,10 +55,49 @@ void grid::addrow(grid* firstleftcell, int width)
 	}
 }
 
+void grid::populate(int colours)
+{
+	int cellscount = 0;
+	for (grid* cur = this; nullptr != cur; cur = ++ (*cur))
+		++cellscount;
+	std::vector<int> vAvailable;
+	for (int i = 1; i <= colours; ++i, --cellscount)
+		vAvailable.emplace_back(i);
+	for (int i = 1; i <= colours; ++i, --cellscount)
+		vAvailable.emplace_back(i);
+	for (int i = 0; i < cellscount; ++i)
+		vAvailable.emplace_back(0);
+
+	static std::random_device r;
+	static std::mt19937 e1(r());
+	std::shuffle(vAvailable.begin(), vAvailable.end(), e1);
+
+	for (grid* cur = this; nullptr != cur;)
+	{
+		cur->colour = vAvailable.back();
+		vAvailable.pop_back();
+		cur = ++ (*cur);
+	}
+}
+
+void grid::init(int height, int width)
+{
+	grid* firstcell = this;
+	for (int y = 0; y < height; ++y)
+	{
+		addrow(firstcell, width);
+		if (y < height - 1)
+		{
+			firstcell->bottom = new grid();
+			firstcell = firstcell->bottom;
+		}
+	}
+}
+
 grid::grid(int height, int width, int colours)
 {
-	init(this, height, width);
-	populate(this, colours);
+	this->init(height, width);
+	this->populate(colours);
 }
 
 grid::~grid()
