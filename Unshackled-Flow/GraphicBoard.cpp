@@ -191,7 +191,11 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 	int h = clientHeight / (gHeight + 1);
 	int w = clientWidth / (gWidth + 1);
 
+#ifdef _DEBUG
 	int side = min(w, h) - 2;
+#else
+	int side = std::min(w, h) - 2;
+#endif
 	if (side % 2 == 0)
 		--side;
 
