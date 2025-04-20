@@ -119,16 +119,23 @@ void GraphicBoard::Refresh()
 	DrawGrid(y, x);
 }
 
-void DrawCircle(SDL_Renderer* renderer, int32_t xOrg, int32_t yOrg, int32_t radius)
+void DrawCircle(SDL_Renderer* renderer, int32_t xOrg, int32_t yOrg, double radius)
 {
-	for(int alpha = 0; alpha < 180; ++alpha)
+	for (double y = 1; y >= 0; y -= 0.01)
 	{
-		int x = cos(alpha) * radius;
-		int y = sin(alpha) * radius;
+		double alpha = asin(y);
+		double xp = cos(alpha) * radius;
+		double yp = y * radius;
 
-		SDL_RenderDrawPoint(renderer, xOrg + x, yOrg + y);
+		SDL_RenderDrawLine(renderer, xOrg - xp, yOrg + yp, xOrg + xp, yOrg + yp);
+		SDL_RenderDrawLine(renderer, xOrg - xp, yOrg - yp, xOrg + xp, yOrg - yp);
 
-		SDL_RenderDrawLine(renderer, xOrg, yOrg, xOrg + x, yOrg + y);
+		/*
+		SDL_RenderDrawPoint(renderer, xOrg - xp, yOrg + yp);
+		SDL_RenderDrawPoint(renderer, xOrg + xp, yOrg + yp);
+		SDL_RenderDrawPoint(renderer, xOrg - xp, yOrg - yp);
+		SDL_RenderDrawPoint(renderer, xOrg + xp, yOrg - yp);
+		*/
 	}
 }
 
@@ -148,8 +155,9 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 	int h = clientHeight / (gHeight + 1);
 	int w = clientWidth / (gWidth + 1);
 
-	int side = min(w, h);
-
+	int side = min(w, h) - 2;
+	if (side % 2 == 0)
+		--side;
 
 	int curWidth = gWidth * side;
 	int curHeight = gHeight * side;
@@ -190,7 +198,10 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 		{			
 			if (0 != curcell->colour)
 			{
-				DrawCircle(renderer, x * side + xDec + side / 2, y * side + yDec + side / 2, side / 2);
+				double radius = side / 2. - 2.;
+				int xOrg = x * side + xDec + side / 2 + 1;
+				int yOrg = y * side + yDec + side / 2 + 1;
+				DrawCircle(renderer, xOrg, yOrg, radius);
 			}
 			else
 			{
