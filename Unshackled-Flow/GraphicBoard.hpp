@@ -66,6 +66,7 @@ private:
 	void ThrowException(const int i);
 	void Refresh();
 	void DrawGrid();
+	grid* GetCell(int x, int y);
 public:
 	GraphicBoard();
 	~GraphicBoard();

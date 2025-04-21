@@ -34,6 +34,7 @@ void grid::init(grid * topleftcorner, int height, int width)
 		if(y < height - 1)
 		{
 			firstcell->bottom = new grid();
+			firstcell->bottom->top = firstcell;
 			firstcell = firstcell->bottom;
 		}
 	}
@@ -89,6 +90,7 @@ void grid::init(int height, int width)
 		if (y < height - 1)
 		{
 			firstcell->bottom = new grid();
+			firstcell->bottom->top = firstcell;
 			firstcell = firstcell->bottom;
 		}
 	}

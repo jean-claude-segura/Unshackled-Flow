@@ -194,6 +194,12 @@ void FillCircle(SDL_Renderer* renderer, int xOrg, int yOrg, double radius)
 
 void GraphicBoard::DrawGrid()
 {
+	SDL_SetRenderDrawColor(renderer,
+		0, // red
+		0, // green
+		0, // blue
+		255); // Alpha
+
 	SDL_RenderClear(renderer);
 
 	SDL_SetRenderDrawColor(renderer,
@@ -261,6 +267,49 @@ void GraphicBoard::DrawGrid()
 	SDL_RenderPresent(renderer);
 }
 
+grid* GraphicBoard::GetCell(int xscr, int yscr)
+{
+	int curWidth = gWidth * side;
+	int curHeight = gHeight * side;
+	int xDec = (Width - curWidth) / 2;
+	int yDec = (Height - curHeight) / 2;
+
+	int xOrg = xDec;
+	int yOrg = yDec;
+
+	if(xscr > xOrg && xscr < (curWidth + xOrg) && yscr > yOrg && yscr < (curHeight + yOrg ))
+	{
+		int x = xscr - xOrg;
+		x /= side;
+
+		int y = yscr - yOrg;
+		y /= side;
+
+		auto curcell = Grille;
+
+		int _x = 0, _y = 0;
+
+		while (nullptr != curcell && x != _x)
+		{
+			curcell = curcell->right;
+			++_x;
+		}
+
+		if (x == _x)
+		{
+			while (nullptr != curcell && y != _y)
+			{
+				curcell = curcell->bottom;
+				++_y;
+			}
+		}
+
+		return x == _x && y == _y ? curcell : nullptr;
+	}
+
+	return nullptr;
+}
+
 void GraphicBoard::Loop()
 {
 	Init();
@@ -287,15 +336,34 @@ void GraphicBoard::Loop()
 			case SDL_BUTTON_LEFT:
 				if ((event.type == SDL_MOUSEBUTTONDOWN))
 				{
-					double radius = (side / 2. - 2.) / 2.;
-					FillCircle(renderer, event.button.x, event.button.y, radius);
-					SDL_RenderPresent(renderer);
-
-					while (SDL_WaitEvent(&event) && (event.type != SDL_MOUSEBUTTONUP))
+					const auto curcell = GetCell(event.button.x, event.button.y);
+					if(nullptr != curcell && 0 != curcell->colour)
 					{
+						const auto colour = arrColours[curcell->colour];
+						SDL_SetRenderDrawColor(renderer,
+							colour.getRed(), // red
+							colour.getGreen(), // green
+							colour.getBlue(), // blue
+							255); // Alpha
+						double radius = (side / 2. - 2.) / 2.;
 						FillCircle(renderer, event.button.x, event.button.y, radius);
 						SDL_RenderPresent(renderer);
+
+						while (SDL_WaitEvent(&event) && (event.type != SDL_MOUSEBUTTONUP))
+						{
+							FillCircle(renderer, event.button.x, event.button.y, radius);
+							SDL_RenderPresent(renderer);
+						}
 					}
+				}
+				break;
+			case SDL_BUTTON_RIGHT:
+				if ((event.type == SDL_MOUSEBUTTONDOWN))
+				{
+					while (SDL_WaitEvent(&event) && (event.type != SDL_MOUSEBUTTONUP))
+					{
+					}
+					Refresh();
 				}
 				break;
 			default:
