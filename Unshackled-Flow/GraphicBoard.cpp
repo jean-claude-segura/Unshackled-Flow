@@ -70,7 +70,22 @@ void GraphicBoard::Init()
 	SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));*/
 	//SDL_UpdateWindowSurface(window);
 
-	Grille = new grid(10, 15, 10);
+	gHeight = 10;
+	gWidth = 15;
+	clientHeight = Height * Ratio;;
+	clientWidth = Width * Ratio;
+	int h = clientHeight / (gHeight + 1);
+	int w = clientWidth / (gWidth + 1);
+
+#ifdef _DEBUG
+	side = min(w, h) - 2;
+#else
+	side = std::min(w, h) - 2;
+#endif
+	if (side % 2 == 0)
+		--side;
+
+	Grille = new grid(gHeight, gWidth, 10);
 #ifdef _DEBUG
 	auto curcell = Grille;
 	while (nullptr != curcell)
@@ -105,6 +120,7 @@ void GraphicBoard::Init()
 
 void GraphicBoard::Refresh()
 {
+	/*
 	auto curcell = Grille;
 
 	int x = 0;
@@ -115,8 +131,9 @@ void GraphicBoard::Refresh()
 
 	for (curcell = Grille, y = 0; nullptr != curcell; ++y)
 		curcell = curcell->bottom;
+	*/
 
-	DrawGrid(y, x);
+	DrawGrid();
 }
 
 void DrawCircleSub(SDL_Renderer* renderer, std::vector <std::pair<int, int>> & vIn)
@@ -124,7 +141,7 @@ void DrawCircleSub(SDL_Renderer* renderer, std::vector <std::pair<int, int>> & v
 	std::vector <std::pair<int, int>>::iterator it = vIn.begin();
 	while (it != vIn.end())
 	{
-		const auto itprev = it;
+		const std::vector <std::pair<int, int>>::iterator itprev = it;
 		++it;
 		if (it != vIn.end())
 			SDL_RenderDrawLine(renderer, itprev->first, itprev->second, it->first, it->second);
@@ -175,7 +192,7 @@ void FillCircle(SDL_Renderer* renderer, int xOrg, int yOrg, double radius)
 	}
 }
 
-void GraphicBoard::DrawGrid(int gHeight, int gWidth)
+void GraphicBoard::DrawGrid()
 {
 	SDL_RenderClear(renderer);
 
@@ -184,20 +201,6 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 		255, // green
 		255, // blue
 		255); // Alpha
-
-	int clientHeight = Height * 0.7;
-	int clientWidth = Width * 0.7;
-
-	int h = clientHeight / (gHeight + 1);
-	int w = clientWidth / (gWidth + 1);
-
-#ifdef _DEBUG
-	int side = min(w, h) - 2;
-#else
-	int side = std::min(w, h) - 2;
-#endif
-	if (side % 2 == 0)
-		--side;
 
 	int curWidth = gWidth * side;
 	int curHeight = gHeight * side;
@@ -224,23 +227,6 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 	int x = 0;
 	int y = 0;
 	auto curcell = Grille;
-	std::map<int, std::tuple<int, int, int>> mColours;
-	mColours[0] = { 0,0,0 }; // 0 : BLACK
-	mColours[1] = { 0,0,139 }; // 1 : DARK_BLUE 
-	mColours[2] = { 0,139,0 }; // 2 : DARK_GREEN 
-	mColours[3] = { 0,139,139 }; // 3 : DARK_CYAN
-	mColours[4] = { 139,0,0 }; // 4 : DARK_RED 
-	mColours[5] = { 139,0,139 }; // 5 : DARK_MAGENTA
-	mColours[6] = { 139,139,0 }; // 6 : DARK_YELLOW  (rgb(139, 128, 0))
-	mColours[7] = { 139,139,139 }; // 7 : DARK_WHITE
-	mColours[8] = { 34,32,36 }; // 8 : BRIGHT_BLACK 
-	mColours[9] = { 0,0,255 }; // 9 : BRIGHT_BLUE 
-	mColours[10] = { 0,255,0 }; // A : BRIGHT_GREEN 
-	mColours[11] = { 0,255,255 }; // B : BRIGHT_CYAN 
-	mColours[12] = { 255,0,0 }; // C : BRIGHT_RED 
-	mColours[13] = { 255,0,255 }; // D : BRIGHT_MAGENTA
-	mColours[14] = { 255,255,0 }; // E : BRIGHT_YELLOW 
-	mColours[15] = { 255,255,255}; // F : WHITE 
 
 	while (nullptr != curcell)
 	{
@@ -250,15 +236,11 @@ void GraphicBoard::DrawGrid(int gHeight, int gWidth)
 		{			
 			if (0 != curcell->colour)
 			{
-				int newcolour = curcell->colour + 4;
-				if (newcolour == 8) newcolour = 15;
-				if (newcolour == 7) newcolour = 4;
-				if (newcolour == 6) newcolour = 2;
-				const auto colour = mColours.find(newcolour);
+				const auto colour = arrColours[curcell->colour];
 				SDL_SetRenderDrawColor(renderer,
-					std::get<0>(colour->second), // red
-					std::get<1>(colour->second), // green
-					std::get<2>(colour->second), // blue
+					colour.getRed(), // red
+					colour.getGreen(), // green
+					colour.getBlue(), // blue
 					255); // Alpha
 
 				double radius = side / 2. - 2.;
@@ -292,10 +274,29 @@ void GraphicBoard::Loop()
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym)
 			{
-			case SDLK_RETURN:
-				break;
 			case SDLK_ESCAPE:
 				SDL_PushEvent(&exitEvent);
+				break;
+			default:
+				break;
+			}
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			switch (event.button.button)
+			{
+			case SDL_BUTTON_LEFT:
+				if ((event.type == SDL_MOUSEBUTTONDOWN))
+				{
+					double radius = (side / 2. - 2.) / 2.;
+					FillCircle(renderer, event.button.x, event.button.y, radius);
+					SDL_RenderPresent(renderer);
+
+					while (SDL_WaitEvent(&event) && (event.type != SDL_MOUSEBUTTONUP))
+					{
+						FillCircle(renderer, event.button.x, event.button.y, radius);
+						SDL_RenderPresent(renderer);
+					}
+				}
 				break;
 			default:
 				break;
