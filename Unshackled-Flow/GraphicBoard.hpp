@@ -14,12 +14,6 @@
 #include <tuple>
 #include <array>
 
-class graphGrid : public grid
-{
-	int coordX;
-	int corrdY;
-};
-
 class RedGreenBlue {
 private:
 	Uint8 red;
