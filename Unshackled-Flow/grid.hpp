@@ -14,14 +14,17 @@ private:
 	grid() {};
 	void populate(int colours);
 	void init(int height, int width);
+	uint8_t colour = 0;
 public:
 	grid(int height, int width, int colours);
 	~grid();
+	uint8_t GetColour() { return 0b01111111 & colour; }
+	bool IsPath() { return (colour & 0b01111111) != 0; }
+public:
 	grid* top = nullptr;
 	grid* left = nullptr;
 	grid* bottom = nullptr;
 	grid* right = nullptr;
-	unsigned int colour = 0;
 	grid* operator++();
 	grid* operator--();
 };

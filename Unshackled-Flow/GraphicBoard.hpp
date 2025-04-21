@@ -67,6 +67,8 @@ private:
 	void Refresh();
 	void DrawGrid();
 	grid* GetCell(int x, int y);
+	void FillFlow(int x, int y, int xprev, int yprev);
+	void PutInFlow(int& x, int& y);
 public:
 	GraphicBoard();
 	~GraphicBoard();

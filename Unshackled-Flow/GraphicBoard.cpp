@@ -95,11 +95,11 @@ void GraphicBoard::Init()
 		{
 			std::cout << "[";
 			HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-			if (0 != curcell->colour)
+			if (0 != curcell->GetColour())
 			{
 				PCONSOLE_SCREEN_BUFFER_INFO consoleSBF = new CONSOLE_SCREEN_BUFFER_INFO;
 				GetConsoleScreenBufferInfo(hConsole, consoleSBF);
-				SetConsoleTextAttribute(hConsole, curcell->colour);
+				SetConsoleTextAttribute(hConsole, curcell->GetColour());
 				std::cout << char(1);
 				SetConsoleTextAttribute(hConsole, consoleSBF->wAttributes);
 			}
@@ -240,9 +240,9 @@ void GraphicBoard::DrawGrid()
 		x = 0;
 		while (nullptr != curcell)
 		{			
-			if (0 != curcell->colour)
+			if (0 != curcell->GetColour())
 			{
-				const auto colour = arrColours[curcell->colour];
+				const auto colour = arrColours[curcell->GetColour()];
 				SDL_SetRenderDrawColor(renderer,
 					colour.getRed(), // red
 					colour.getGreen(), // green
@@ -310,6 +310,56 @@ grid* GraphicBoard::GetCell(int xscr, int yscr)
 	return nullptr;
 }
 
+void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
+{
+	double radius = (side / 2. - 2.) / 2.;
+
+	int xcross = x;
+	int ycross = y;
+	PutInFlow(xcross, ycross);
+	int xprevcross = xprev;
+	int yprevcross = yprev;
+	PutInFlow(xprevcross, yprevcross);
+	if (xcross == xprevcross && ycross == yprevcross)
+	{
+
+	}
+	else if (xcross == xprevcross)
+	{
+		for(int ytemp = 0; ytemp < side; ++ytemp)
+			FillCircle(renderer, xcross, ycross < yprevcross ? ycross + ytemp : ycross - ytemp, radius);
+	}
+	else if (ycross == yprevcross)
+	{
+		for (int xtemp = 0; xtemp < side; ++xtemp)
+			FillCircle(renderer, xcross < xprevcross ? xcross + xtemp : xcross - xtemp, ycross, radius);
+	}
+
+	//FillCircle(renderer, xcross, ycross, radius);
+}
+
+void GraphicBoard::PutInFlow(int& xscr, int& yscr)
+{
+	int curWidth = gWidth * side;
+	int curHeight = gHeight * side;
+	int xDec = (Width - curWidth) / 2;
+	int yDec = (Height - curHeight) / 2;
+
+	int xOrg = xDec;
+	int yOrg = yDec;
+
+	if (xscr > xOrg && xscr < (curWidth + xOrg) && yscr > yOrg && yscr < (curHeight + yOrg))
+	{
+		int x = xscr - xOrg;
+		x /= side;
+		xscr = x * side + xOrg + side / 2 + 1;
+
+		int y = yscr - yOrg;
+		y /= side;
+		yscr = y * side + yOrg + side / 2 + 1;
+	}
+}
+
 void GraphicBoard::Loop()
 {
 	Init();
@@ -336,23 +386,32 @@ void GraphicBoard::Loop()
 			case SDL_BUTTON_LEFT:
 				if ((event.type == SDL_MOUSEBUTTONDOWN))
 				{
-					const auto curcell = GetCell(event.button.x, event.button.y);
-					if(nullptr != curcell && 0 != curcell->colour)
+					auto curcell = GetCell(event.button.x, event.button.y);
+					if(nullptr != curcell && 0 != curcell->GetColour())
 					{
-						const auto colour = arrColours[curcell->colour];
+						auto prevcolour = curcell->GetColour();
+						const auto colour = arrColours[curcell->GetColour()];
 						SDL_SetRenderDrawColor(renderer,
 							colour.getRed(), // red
 							colour.getGreen(), // green
 							colour.getBlue(), // blue
 							255); // Alpha
-						double radius = (side / 2. - 2.) / 2.;
-						FillCircle(renderer, event.button.x, event.button.y, radius);
-						SDL_RenderPresent(renderer);
+						//double radius = (side / 2. - 2.) / 2.;
+						//FillCircle(renderer, event.button.x, event.button.y, radius);
+						//FillCross(event.button.x, event.button.y);
+						//SDL_RenderPresent(renderer);
 
-						while (SDL_WaitEvent(&event) && (event.type != SDL_MOUSEBUTTONUP))
+						int xPrev = event.button.x;
+						int yPrev = event.button.y;
+
+						while (SDL_WaitEvent(&event) && (event.type != SDL_MOUSEBUTTONUP) &&
+							(curcell = GetCell(event.button.x, event.button.y)) != nullptr )
 						{
-							FillCircle(renderer, event.button.x, event.button.y, radius);
+							//FillCircle(renderer, event.button.x, event.button.y, radius);
+							FillFlow(event.button.x, event.button.y, xPrev, yPrev);
 							SDL_RenderPresent(renderer);
+							xPrev = event.button.x;
+							yPrev = event.button.y;
 						}
 					}
 				}
