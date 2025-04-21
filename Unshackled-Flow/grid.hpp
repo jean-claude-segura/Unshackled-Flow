@@ -18,8 +18,10 @@ private:
 public:
 	grid(int height, int width, int colours);
 	~grid();
-	uint8_t GetColour() { return 0b01111111 & colour; }
-	bool IsPath() { return (colour & 0b01111111) != 0; }
+	uint8_t GetColour() const { return 0b01111111 & colour; }
+	bool IsPath() const { return (colour & 0b10000000) != 0; }
+	void SetColour(uint8_t _colour) { colour = _colour; }
+	void SetPath(uint8_t _colour) { colour = _colour | 0b10000000; }
 public:
 	grid* top = nullptr;
 	grid* left = nullptr;

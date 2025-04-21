@@ -14,6 +14,12 @@
 #include <tuple>
 #include <array>
 
+class graphGrid : public grid
+{
+	int coordX;
+	int corrdY;
+};
+
 class RedGreenBlue {
 private:
 	Uint8 red;
@@ -67,6 +73,7 @@ private:
 	void Refresh();
 	void DrawGrid();
 	grid* GetCell(int x, int y);
+	void DrawCell(int x, int y);
 	void FillFlow(int x, int y, int xprev, int yprev);
 	void PutInFlow(int& x, int& y);
 public:

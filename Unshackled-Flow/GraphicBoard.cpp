@@ -252,7 +252,10 @@ void GraphicBoard::DrawGrid()
 				double radius = side / 2. - 2.;
 				int xOrg = x * side + xDec + side / 2 + 1;
 				int yOrg = y * side + yDec + side / 2 + 1;
-				FillCircle(renderer, xOrg, yOrg, radius);
+				if(curcell->IsPath())
+					FillCircle(renderer, xOrg, yOrg, radius / 2);
+				else
+					FillCircle(renderer, xOrg, yOrg, radius);
 			}
 			else
 			{
@@ -310,6 +313,43 @@ grid* GraphicBoard::GetCell(int xscr, int yscr)
 	return nullptr;
 }
 
+void GraphicBoard::DrawCell(int xscr, int yscr)
+{
+	int curWidth = gWidth * side;
+	int curHeight = gHeight * side;
+	int xDec = (Width - curWidth) / 2;
+	int yDec = (Height - curHeight) / 2;
+
+	int xOrg = xDec;
+	int yOrg = yDec;
+
+	int x = xscr - xOrg;
+	x /= side;
+	xscr = x * side + xOrg;
+
+	int y = yscr - yOrg;
+	y /= side;
+	yscr = y * side + yOrg;
+
+
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+
+	SDL_Rect cell{ xscr + 1, yscr + 1, side, side };
+	SDL_RenderFillRect(renderer, &cell);
+	
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+	SDL_RenderDrawLine(renderer, xscr, yscr, xscr + side, yscr);
+	SDL_RenderDrawLine(renderer, xscr, yscr + side, xscr + side, yscr + side);
+	SDL_RenderDrawLine(renderer, xscr, yscr, xscr, yscr + side);
+	SDL_RenderDrawLine(renderer, xscr + side, yscr, xscr + side, yscr + side);
+
+	SDL_RenderDrawLine(renderer, xscr, yscr + 1 + side, xscr + side, yscr + 1 + side);
+	SDL_RenderDrawLine(renderer, xscr, yscr + 1, xscr + side, yscr + 1);
+	SDL_RenderDrawLine(renderer, xscr + 1 + side, yscr, xscr + 1 + side, yscr + side);
+	SDL_RenderDrawLine(renderer, xscr + 1, yscr, xscr + 1, yscr + side);
+}
+
 void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 {
 	double radius = (side / 2. - 2.) / 2.;
@@ -326,16 +366,62 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 	}
 	else if (xcross == xprevcross)
 	{
-		for(int ytemp = 0; ytemp < side; ++ytemp)
-			FillCircle(renderer, xcross, ycross < yprevcross ? ycross + ytemp : ycross - ytemp, radius);
+		const auto prevcell = GetCell(xprev, yprev);
+		const auto curcell = GetCell(x, y);
+		if (prevcell->GetColour() == curcell->GetColour())
+		{
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+			for (int ytemp = 0; ytemp < side; ++ytemp)
+				FillCircle(renderer, xcross, ycross < yprevcross ? ycross + ytemp : ycross - ytemp, radius);
+			DrawCell(xprevcross, yprevcross);
+			const auto colour = arrColours[curcell->GetColour()];
+			SDL_SetRenderDrawColor(renderer, colour.getRed(), colour.getGreen(), colour.getBlue(), 255);
+			if (curcell->IsPath())
+				FillCircle(renderer, xcross, ycross, radius);
+			else
+				FillCircle(renderer, xcross, ycross, (side / 2. - 2.));
+			prevcell->SetColour(0);
+		}
+		else if (prevcell->GetColour() != curcell->GetColour() && curcell->GetColour() != 0)
+		{
+		}
+		else
+		{
+			for (int ytemp = 0; ytemp < side; ++ytemp)
+				FillCircle(renderer, xcross, ycross < yprevcross ? ycross + ytemp : ycross - ytemp, radius);
+			if (!curcell->IsPath())
+				curcell->SetPath(prevcell->GetColour());
+		}
 	}
 	else if (ycross == yprevcross)
 	{
-		for (int xtemp = 0; xtemp < side; ++xtemp)
-			FillCircle(renderer, xcross < xprevcross ? xcross + xtemp : xcross - xtemp, ycross, radius);
+		const auto prevcell = GetCell(xprev, yprev);
+		const auto curcell = GetCell(x, y);
+		if (prevcell->GetColour() == curcell->GetColour())
+		{
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+			for (int xtemp = 0; xtemp < side; ++xtemp)
+				FillCircle(renderer, xcross < xprevcross ? xcross + xtemp : xcross - xtemp, ycross, radius);
+			DrawCell(xprevcross, yprevcross);
+			const auto colour = arrColours[curcell->GetColour()];
+			SDL_SetRenderDrawColor(renderer, colour.getRed(), colour.getGreen(), colour.getBlue(), 255);
+			if (curcell->IsPath())
+				FillCircle(renderer, xcross, ycross, radius);
+			else
+				FillCircle(renderer, xcross, ycross, (side / 2. - 2.));
+			prevcell->SetColour(0);
+		}
+		else if (prevcell->GetColour() != curcell->GetColour() && curcell->GetColour() != 0)
+		{
+		}
+		else
+		{
+			for (int xtemp = 0; xtemp < side; ++xtemp)
+				FillCircle(renderer, xcross < xprevcross ? xcross + xtemp : xcross - xtemp, ycross, radius);
+			if (!curcell->IsPath())
+				curcell->SetPath(prevcell->GetColour());
+		}
 	}
-
-	//FillCircle(renderer, xcross, ycross, radius);
 }
 
 void GraphicBoard::PutInFlow(int& xscr, int& yscr)
