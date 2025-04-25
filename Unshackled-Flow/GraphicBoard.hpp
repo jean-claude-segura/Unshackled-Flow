@@ -84,6 +84,6 @@ private:
 	int side;
 	int gHeight, gWidth, clientHeight, clientWidth;
 	double Ratio = 0.7;
-	std::map<std::pair<int, int>, grid*> mCoordinatesToCell;
 	std::map<grid* , std::pair<int, int>> mCellToCoordinates;
+	std::unique_ptr<std::unique_ptr<grid*[]>[]> arrCoordinatesToCell;
 };

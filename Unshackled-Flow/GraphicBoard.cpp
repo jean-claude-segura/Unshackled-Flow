@@ -234,7 +234,12 @@ void GraphicBoard::DrawGrid()
 	int y = 0;
 	auto curcell = Grille;
 
-	mCoordinatesToCell.clear();
+	arrCoordinatesToCell.release();
+	arrCoordinatesToCell = std::make_unique <std::unique_ptr<grid*[]>[]>(gWidth);
+	for (int i = 0; i < gWidth; ++i) {
+		arrCoordinatesToCell.get()[i] = std::make_unique<grid*[]>(gHeight);
+	}
+
 	mCellToCoordinates.clear();
 	while (nullptr != curcell)
 	{
@@ -263,7 +268,7 @@ void GraphicBoard::DrawGrid()
 			{
 			}
 
-			mCoordinatesToCell[std::pair<int, int>(x, y)] = curcell;
+			arrCoordinatesToCell[x][y] = curcell;
 			mCellToCoordinates[curcell] = std::pair<int, int>(x, y);
 
 			curcell = curcell->right;
@@ -293,9 +298,7 @@ grid* GraphicBoard::GetCell(int xscr, int yscr)
 		int y = yscr - yOrg;
 		y /= side;
 
-		const auto it = mCoordinatesToCell.find(std::pair<int, int>(x, y));
-		if (it != mCoordinatesToCell.end())
-			curcell = it->second;
+		curcell = arrCoordinatesToCell[x][y];
 	}
 
 	return curcell;
