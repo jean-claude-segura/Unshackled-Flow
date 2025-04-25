@@ -370,6 +370,8 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 		}
 		else if (prevcell->GetColour() != curcell->GetColour() && curcell->GetColour() != 0)
 		{
+			const auto colour = arrColours[curcell->GetColour()];
+			SDL_SetRenderDrawColor(renderer, colour.getRed(), colour.getGreen(), colour.getBlue(), 255);
 		}
 		else
 		{
@@ -399,6 +401,8 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 		}
 		else if (prevcell->GetColour() != curcell->GetColour() && curcell->GetColour() != 0)
 		{
+			const auto colour = arrColours[curcell->GetColour()];
+			SDL_SetRenderDrawColor(renderer, colour.getRed(), colour.getGreen(), colour.getBlue(), 255);
 		}
 		else
 		{
@@ -415,11 +419,8 @@ bool GraphicBoard::GetCellCenter(const int xscr, const int yscr, std::pair<int, 
 	bool bRet = false;
 	int curWidth = gWidth * side;
 	int curHeight = gHeight * side;
-	int xDec = (Width - curWidth) / 2;
-	int yDec = (Height - curHeight) / 2;
-
-	int xOrg = xDec;
-	int yOrg = yDec;
+	int xOrg = (Width - curWidth) / 2;
+	int yOrg = (Height - curHeight) / 2;
 
 	if (xscr > xOrg && xscr < (curWidth + xOrg) && yscr > yOrg && yscr < (curHeight + yOrg))
 	{
@@ -435,6 +436,34 @@ bool GraphicBoard::GetCellCenter(const int xscr, const int yscr, std::pair<int, 
 	}
 
 	return bRet;
+}
+
+void GraphicBoard::ClearPath(grid* cell)
+{
+	int curWidth = gWidth * side;
+	int curHeight = gHeight * side;
+	int xOrg = (Width - curWidth) / 2;
+	int yOrg = (Height - curHeight) / 2;
+	const auto it = mCellToCoordinates.find(cell);
+	const auto cellCoord = it->second;
+	std::pair<int, int> prevCoord = std::make_pair<int, int>(cellCoord.first * side + xOrg + side / 2 + 1, cellCoord.second * side + yOrg + side / 2 + 1);
+	DrawEmptyCell(prevCoord.first, prevCoord.second);
+
+	const auto colourIndex = cell->GetColour();
+	if(cell->IsPath())
+	{
+		cell->SetColour(0);
+	}
+	else
+	{
+		const auto colour = arrColours[cell->GetColour()];
+		SDL_SetRenderDrawColor(renderer, colour.getRed(), colour.getGreen(), colour.getBlue(), 255);
+		FillCircle(renderer, prevCoord.first, prevCoord.second, (side / 2. - 2.));
+	}
+	if (cell->top != nullptr && cell->top->GetColour() == colourIndex) ClearPath(cell->top);
+	if (cell->left != nullptr && cell->left->GetColour() == colourIndex) ClearPath(cell->left);
+	if (cell->bottom != nullptr && cell->bottom->GetColour() == colourIndex) ClearPath(cell->bottom);
+	if (cell->right != nullptr && cell->right->GetColour() == colourIndex) ClearPath(cell->right);
 }
 
 void GraphicBoard::Loop()
@@ -466,6 +495,11 @@ void GraphicBoard::Loop()
 					auto curcell = GetCell(event.button.x, event.button.y);
 					if(nullptr != curcell && 0 != curcell->GetColour())
 					{
+						if (!curcell->IsPath())
+						{
+							ClearPath(curcell);
+							SDL_RenderPresent(renderer);
+						}
 						auto prevcell = curcell;
 						const auto colour = arrColours[curcell->GetColour()];
 						SDL_SetRenderDrawColor(renderer,

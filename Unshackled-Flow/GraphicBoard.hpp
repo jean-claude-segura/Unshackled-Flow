@@ -70,6 +70,7 @@ private:
 	void DrawEmptyCell(int x, int y);
 	void FillFlow(int x, int y, int xprev, int yprev);
 	bool GetCellCenter(const int xscr, const int yscr, std::pair<int, int> & coord);
+	void ClearPath(grid* cell);
 public:
 	GraphicBoard();
 	~GraphicBoard();
