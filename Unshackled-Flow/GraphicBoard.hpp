@@ -67,9 +67,9 @@ private:
 	void Refresh();
 	void DrawGrid();
 	grid* GetCell(int x, int y);
-	void DrawCell(int x, int y);
+	void DrawEmptyCell(int x, int y);
 	void FillFlow(int x, int y, int xprev, int yprev);
-	void PutInFlow(int& x, int& y);
+	bool GetCellCenter(const int xscr, const int yscr, std::pair<int, int> & coord);
 public:
 	GraphicBoard();
 	~GraphicBoard();
@@ -84,4 +84,6 @@ private:
 	int side;
 	int gHeight, gWidth, clientHeight, clientWidth;
 	double Ratio = 0.7;
+	std::map<std::pair<int, int>, grid*> mCoordinatesToCell;
+	std::map<grid* , std::pair<int, int>> mCellToCoordinates;
 };
