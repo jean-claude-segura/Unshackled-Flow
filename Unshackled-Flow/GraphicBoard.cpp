@@ -410,6 +410,16 @@ bool GraphicBoard::IsTakeBack(grid* curcell, grid* prevcell)
 			if (nullptr != curcell->right && curcell->right != prevcell && curcell->right->GetColour() == prevcell->GetColour())
 				++links;
 			bRet = 0 != links;
+			links = 0;
+			if (nullptr != prevcell->top && prevcell->top != curcell && prevcell->top->GetColour() == curcell->GetColour())
+				++links;
+			if (nullptr != prevcell->left && prevcell->left != curcell && prevcell->left->GetColour() == curcell->GetColour())
+				++links;
+			if (nullptr != prevcell->bottom && prevcell->bottom != curcell && prevcell->bottom->GetColour() == curcell->GetColour())
+				++links;
+			if (nullptr != prevcell->right && prevcell->right != curcell && prevcell->right->GetColour() == curcell->GetColour())
+				++links;
+			bRet = bRet && (0 == links);
 		}
 		else
 		{
@@ -430,9 +440,37 @@ bool GraphicBoard::IsTakeBack(grid* curcell, grid* prevcell)
 
 bool GraphicBoard::IsLink(grid* curcell, grid* prevcell)
 {
-	bool bRet = nullptr != prevcell && nullptr != curcell;
-	bRet = bRet && prevcell->GetColour() == curcell->GetColour();
-	return false;
+	bool bRet = false;
+	if (nullptr != prevcell && nullptr != curcell && prevcell->GetColour() == curcell->GetColour())
+	{
+		if (curcell->IsPath())
+		{
+			int links = 0;
+			if (nullptr != curcell->top && curcell->top != prevcell && curcell->top->GetColour() == prevcell->GetColour())
+				++links;
+			if (nullptr != curcell->left && curcell->left != prevcell && curcell->left->GetColour() == prevcell->GetColour())
+				++links;
+			if (nullptr != curcell->bottom && curcell->bottom != prevcell && curcell->bottom->GetColour() == prevcell->GetColour())
+				++links;
+			if (nullptr != curcell->right && curcell->right != prevcell && curcell->right->GetColour() == prevcell->GetColour())
+				++links;
+			bRet = 0 != links;
+		}
+		else
+		{
+			int links = 0;
+			if (nullptr != prevcell->top && prevcell->top != curcell && prevcell->top->GetColour() == curcell->GetColour())
+				++links;
+			if (nullptr != prevcell->left && prevcell->left != curcell && prevcell->left->GetColour() == curcell->GetColour())
+				++links;
+			if (nullptr != prevcell->bottom && prevcell->bottom != curcell && prevcell->bottom->GetColour() == curcell->GetColour())
+				++links;
+			if (nullptr != prevcell->right && prevcell->right != curcell && prevcell->right->GetColour() == curcell->GetColour())
+				++links;
+			bRet = 0 == links;
+		}
+	}
+	return bRet;
 }
 
 void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
@@ -500,7 +538,7 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 				)
 			{
 				// Cell is free or needs to be overwritten :
-				if (curcell->IsPath())
+				if (!IsLink(curcell, prevcell) && curcell->IsPath())
 				{
 					// Cell needs to be overwritten :
 					//DrawEmptyCell(curCoord.first, curCoord.second);
