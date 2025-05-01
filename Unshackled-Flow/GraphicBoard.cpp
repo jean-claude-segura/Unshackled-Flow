@@ -108,10 +108,10 @@ void GraphicBoard::Init()
 				std::cout << " ";
 			}
 			std::cout << "]";
-			curcell = curcell->right;
+			curcell = curcell->GetRight();
 		}
 		std::cout << std::endl;
-		curcell = firstin->bottom;
+		curcell = firstin->GetBottom();
 	}
 	std::cout << std::endl;
 #endif // _DEBUG
@@ -127,10 +127,10 @@ void GraphicBoard::Refresh()
 	int y = 0;
 
 	for (x = 0; nullptr != curcell; ++x)
-		curcell = curcell->right;
+		curcell = curcell->GetRight();
 
 	for (curcell = Grille, y = 0; nullptr != curcell; ++y)
-		curcell = curcell->bottom;
+		curcell = curcell->GetBottom();
 	*/
 
 	DrawGrid();
@@ -247,7 +247,7 @@ void GraphicBoard::DrawGrid()
 		x = 0;
 		while (nullptr != curcell)
 		{			
-			if (0 != curcell->GetColour())
+			if (curcell->IsPath() || curcell->IsNode())
 			{
 				const auto& colour = arrColours[curcell->GetColour()];
 				SDL_SetRenderDrawColor(renderer,
@@ -271,10 +271,10 @@ void GraphicBoard::DrawGrid()
 			arrCoordinatesToCell[x][y] = curcell;
 			mCellToCoordinates[curcell] = std::pair<int, int>(x, y);
 
-			curcell = curcell->right;
+			curcell = curcell->GetRight();
 			++x;
 		}
-		curcell = firstin->bottom;
+		curcell = firstin->GetBottom();
 		++y;
 	}
 
@@ -348,131 +348,6 @@ void GraphicBoard::DrawEmptyCell(int xscr, int yscr)
 	SDL_RenderDrawLine(renderer, xscr + 1, yscr, xscr + 1, yscr + side);
 }
 
-bool GraphicBoard::IsFinal(grid * curcell, grid * prevcell)
-{
-	return
-		(curcell->top == nullptr || curcell->top->GetColour() != curcell->GetColour() || curcell->top == prevcell) &&
-		(curcell->left == nullptr || curcell->left->GetColour() != curcell->GetColour() || curcell->left == prevcell) &&
-		(curcell->bottom == nullptr || curcell->bottom->GetColour() != curcell->GetColour() || curcell->bottom == prevcell) &&
-		(curcell->right == nullptr || curcell->right->GetColour() != curcell->GetColour() || curcell->right == prevcell)
-		;
-}
-
-bool GraphicBoard::IsAdjacent(grid* curcell, grid* prevcell)
-{
-	return (
-		nullptr != curcell && nullptr != prevcell &&
-		(
-			curcell->top == prevcell ||
-			curcell->left == prevcell ||
-			curcell->bottom == prevcell ||
-			curcell->right == prevcell
-			)
-		);
-}
-
-bool GraphicBoard::IsHorizontallyAdjacent(grid* curcell, grid* prevcell)
-{
-	return (
-		nullptr != curcell && nullptr != prevcell &&
-		(
-			curcell->left == prevcell ||
-			curcell->right == prevcell
-			)
-		);
-}
-
-bool GraphicBoard::IsVerticallyAdjacent(grid* curcell, grid* prevcell)
-{
-	return (
-		nullptr != curcell && nullptr != prevcell &&
-		(
-			curcell->top == prevcell ||
-			curcell->bottom == prevcell
-			)
-		);
-}
-
-bool GraphicBoard::IsTakeBack(grid* curcell, grid* prevcell)
-{
-	bool bRet = false;
-	if(nullptr != prevcell && nullptr != curcell && prevcell->GetColour() == curcell->GetColour())
-	{
-		if(curcell->IsPath())
-		{
-			int links = 0;
-			if (nullptr != curcell->top && curcell->top != prevcell && curcell->top->GetColour() == prevcell->GetColour())
-				++links;
-			if (nullptr != curcell->left && curcell->left != prevcell && curcell->left->GetColour() == prevcell->GetColour())
-				++links;
-			if (nullptr != curcell->bottom && curcell->bottom != prevcell && curcell->bottom->GetColour() == prevcell->GetColour())
-				++links;
-			if (nullptr != curcell->right && curcell->right != prevcell && curcell->right->GetColour() == prevcell->GetColour())
-				++links;
-			bRet = 0 != links;
-			links = 0;
-			if (nullptr != prevcell->top && prevcell->top != curcell && prevcell->top->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->left && prevcell->left != curcell && prevcell->left->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->bottom && prevcell->bottom != curcell && prevcell->bottom->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->right && prevcell->right != curcell && prevcell->right->GetColour() == curcell->GetColour())
-				++links;
-			bRet = bRet && (0 == links);
-		}
-		else
-		{
-			int links = 0;
-			if (nullptr != prevcell->top && prevcell->top != curcell && prevcell->top->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->left && prevcell->left != curcell && prevcell->left->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->bottom && prevcell->bottom != curcell && prevcell->bottom->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->right && prevcell->right != curcell && prevcell->right->GetColour() == curcell->GetColour())
-				++links;
-			bRet = 0 == links;
-		}
-	}
-	return bRet;
-}
-
-bool GraphicBoard::IsLink(grid* curcell, grid* prevcell)
-{
-	bool bRet = false;
-	if (nullptr != prevcell && nullptr != curcell && prevcell->GetColour() == curcell->GetColour())
-	{
-		if (curcell->IsPath())
-		{
-			int links = 0;
-			if (nullptr != curcell->top && curcell->top != prevcell && curcell->top->GetColour() == prevcell->GetColour())
-				++links;
-			if (nullptr != curcell->left && curcell->left != prevcell && curcell->left->GetColour() == prevcell->GetColour())
-				++links;
-			if (nullptr != curcell->bottom && curcell->bottom != prevcell && curcell->bottom->GetColour() == prevcell->GetColour())
-				++links;
-			if (nullptr != curcell->right && curcell->right != prevcell && curcell->right->GetColour() == prevcell->GetColour())
-				++links;
-			bRet = 0 != links;
-		}
-		else
-		{
-			int links = 0;
-			if (nullptr != prevcell->top && prevcell->top != curcell && prevcell->top->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->left && prevcell->left != curcell && prevcell->left->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->bottom && prevcell->bottom != curcell && prevcell->bottom->GetColour() == curcell->GetColour())
-				++links;
-			if (nullptr != prevcell->right && prevcell->right != curcell && prevcell->right->GetColour() == curcell->GetColour())
-				++links;
-			bRet = 0 == links;
-		}
-	}
-	return bRet;
-}
-
 void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 {
 	double radius = (side / 2. - 2.) / 2.;
@@ -489,20 +364,20 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 	{
 
 	}
-	else if (IsAdjacent(curcell, prevcell) && prevcell->GetColour() != 0)
+	else if (curcell->IsAdjacent(prevcell) && prevcell->GetColour() != 0)
 	{
-		if (!prevcell->IsPath())
+		if (prevcell->IsNode())
 		{
 			// Restart :
 			ClearPath(prevcell);
 		}
 
 		// Take back :
-		if (IsTakeBack(curcell, prevcell))
+		if (curcell->IsTakeBack(prevcell))
 		{
 			// first we clear the previous cell :
 			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-			if (IsVerticallyAdjacent(curcell, prevcell))
+			if (curcell->IsVerticallyAdjacent(prevcell))
 			{
 				for (int ytemp = 0; ytemp < side; ++ytemp)
 					FillCircle(renderer, curCoord.first, curCoord.second < prevCoord.second ? curCoord.second + ytemp : curCoord.second - ytemp, radius);
@@ -538,7 +413,7 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 				)
 			{
 				// Cell is free or needs to be overwritten :
-				if (!IsLink(curcell, prevcell) && curcell->IsPath())
+				if (!curcell->IsLink(prevcell) && curcell->IsPath())
 				{
 					// Cell needs to be overwritten :
 					//DrawEmptyCell(curCoord.first, curCoord.second);
@@ -546,7 +421,7 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 				}
 				const auto& colour = arrColours[prevcell->GetColour()];
 				SDL_SetRenderDrawColor(renderer, colour.getRed(), colour.getGreen(), colour.getBlue(), 255);
-				if (IsVerticallyAdjacent(curcell, prevcell))
+				if (curcell->IsVerticallyAdjacent(prevcell))
 				{
 					for (int ytemp = 0; ytemp < side; ++ytemp)
 						FillCircle(renderer, curCoord.first, curCoord.second < prevCoord.second ? curCoord.second + ytemp : curCoord.second - ytemp, radius);
@@ -561,10 +436,10 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 			else if (!curcell->IsPath() && curcell->GetColour() == prevcell->GetColour())
 			{
 				// Cell is same colour node : we close or restart :
-				if (IsFinal(curcell, prevcell))
+				if (curcell->IsFinal(prevcell))
 				{
 					// Closure :
-					if (IsVerticallyAdjacent(curcell, prevcell))
+					if (curcell->IsVerticallyAdjacent(prevcell))
 					{
 						for (int ytemp = 0; ytemp < side; ++ytemp)
 							FillCircle(renderer, curCoord.first, curCoord.second < prevCoord.second ? curCoord.second + ytemp : curCoord.second - ytemp, radius);
@@ -627,11 +502,12 @@ void GraphicBoard::ClearPath(grid* cell)
 	DrawEmptyCell(prevCoord.first, prevCoord.second);
 
 	const auto colourIndex = cell->GetColour();
-	if(colourIndex != 0)
+	if(cell->IsPath() || cell->IsNode())
 	{
 		if (cell->IsPath())
 		{
 			cell->SetColour(0);
+			cell->UnsetPath();
 		}
 		else
 		{
@@ -639,10 +515,10 @@ void GraphicBoard::ClearPath(grid* cell)
 			SDL_SetRenderDrawColor(renderer, colour.getRed(), colour.getGreen(), colour.getBlue(), 255);
 			FillCircle(renderer, prevCoord.first, prevCoord.second, (side / 2. - 2.));
 		}
-		if (cell->top != nullptr && cell->top->GetColour() == colourIndex) ClearPath(cell->top);
-		if (cell->left != nullptr && cell->left->GetColour() == colourIndex) ClearPath(cell->left);
-		if (cell->bottom != nullptr && cell->bottom->GetColour() == colourIndex) ClearPath(cell->bottom);
-		if (cell->right != nullptr && cell->right->GetColour() == colourIndex) ClearPath(cell->right);
+		if (cell->GetTop() != nullptr && cell->GetTop()->GetColour() == colourIndex) ClearPath(cell->GetTop());
+		if (cell->GetLeft() != nullptr && cell->GetLeft()->GetColour() == colourIndex) ClearPath(cell->GetLeft());
+		if (cell->GetBottom() != nullptr && cell->GetBottom()->GetColour() == colourIndex) ClearPath(cell->GetBottom());
+		if (cell->GetRight() != nullptr  && cell->GetRight()->GetColour() == colourIndex) ClearPath(cell->GetRight());
 	}
 }
 
@@ -675,7 +551,7 @@ void GraphicBoard::Loop()
 					auto curcell = GetCell(event.button.x, event.button.y);
 					if(nullptr != curcell && 0 != curcell->GetColour())
 					{
-						if (!curcell->IsPath())
+						if (curcell->IsNode())
 						{
 							ClearPath(curcell);
 							SDL_RenderPresent(renderer);

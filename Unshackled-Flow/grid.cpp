@@ -76,6 +76,7 @@ void grid::populate(int colours)
 	for (grid* cur = this; nullptr != cur;)
 	{
 		cur->colour = vAvailable.back();
+		cur->node = vAvailable.back() != 0;
 		vAvailable.pop_back();
 		cur = ++ (*cur);
 	}
@@ -150,4 +151,129 @@ grid* grid::operator--()
 	}
 	else
 		return nullptr;
+}
+
+bool grid::IsAdjacent(grid* prevcell)
+{
+	return (
+		nullptr != prevcell &&
+		(
+			top == prevcell ||
+			left == prevcell ||
+			bottom == prevcell ||
+			right == prevcell
+			)
+		);
+}
+
+bool grid::IsHorizontallyAdjacent(grid* prevcell)
+{
+	return (
+		nullptr != prevcell &&
+		(
+			left == prevcell ||
+			right == prevcell
+			)
+		);
+}
+
+bool grid::IsVerticallyAdjacent(grid* prevcell)
+{
+	return (
+		nullptr != prevcell &&
+		(
+			top == prevcell ||
+			bottom == prevcell
+			)
+		);
+}
+
+bool grid::IsTakeBack(grid* prevcell)
+{
+	bool bRet = false;
+	if (nullptr != prevcell && prevcell->colour == colour)
+	{
+		if (path)
+		{
+			int links = 0;
+			if (nullptr != top && top != prevcell && top->colour == prevcell->colour)
+				++links;
+			if (nullptr != left && left != prevcell && left->colour == prevcell->colour)
+				++links;
+			if (nullptr != bottom && bottom != prevcell && bottom->colour == prevcell->colour)
+				++links;
+			if (nullptr != right && right != prevcell && right->colour == prevcell->colour)
+				++links;
+			bRet = 0 != links;
+			links = 0;
+			if (nullptr != prevcell->top && prevcell->top != this && prevcell->top->colour == colour)
+				++links;
+			if (nullptr != prevcell->left && prevcell->left != this && prevcell->left->colour == colour)
+				++links;
+			if (nullptr != prevcell->bottom && prevcell->bottom != this && prevcell->bottom->colour == colour)
+				++links;
+			if (nullptr != prevcell->right && prevcell->right != this && prevcell->right->colour == colour)
+				++links;
+			bRet = bRet && (0 == links);
+		}
+		else
+		{
+			int links = 0;
+			if (nullptr != prevcell->top && prevcell->top != this && prevcell->top->colour == colour)
+				++links;
+			if (nullptr != prevcell->left && prevcell->left != this && prevcell->left->colour == colour)
+				++links;
+			if (nullptr != prevcell->bottom && prevcell->bottom != this && prevcell->bottom->colour == colour)
+				++links;
+			if (nullptr != prevcell->right && prevcell->right != this && prevcell->right->colour == colour)
+				++links;
+			bRet = 0 == links;
+		}
+	}
+	return bRet;
+}
+
+bool grid::IsLink(grid* prevcell)
+{
+	bool bRet = false;
+	if (nullptr != prevcell && prevcell->colour == colour)
+	{
+		if (path)
+		{
+			int links = 0;
+			if (nullptr != top && top != prevcell && top->colour == prevcell->colour)
+				++links;
+			if (nullptr != left && left != prevcell && left->colour == prevcell->colour)
+				++links;
+			if (nullptr != bottom && bottom != prevcell && bottom->colour == prevcell->colour)
+				++links;
+			if (nullptr != right && right != prevcell && right->colour == prevcell->colour)
+				++links;
+			bRet = 0 != links;
+		}
+		else
+		{
+			int links = 0;
+			if (nullptr != prevcell->top && prevcell->top != this && prevcell->top->colour == colour)
+				++links;
+			if (nullptr != prevcell->left && prevcell->left != this && prevcell->left->colour == colour)
+				++links;
+			if (nullptr != prevcell->bottom && prevcell->bottom != this && prevcell->bottom->colour == colour)
+				++links;
+			if (nullptr != prevcell->right && prevcell->right != this && prevcell->right->colour == colour)
+				++links;
+			bRet = 0 == links;
+		}
+	}
+	return bRet;
+}
+
+bool grid::IsFinal(grid* prevcell)
+{
+	return
+		(top == nullptr || top->colour != colour || top == prevcell) &&
+		(left == nullptr || left->colour != colour || left == prevcell) &&
+		(bottom == nullptr || bottom->colour != colour || bottom == prevcell) &&
+		(right == nullptr || right->colour != colour || right == prevcell)
+		;
 }

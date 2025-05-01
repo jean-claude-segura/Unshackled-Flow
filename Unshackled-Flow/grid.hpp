@@ -15,18 +15,38 @@ private:
 	void populate(int colours);
 	void init(int height, int width);
 	uint8_t colour = 0;
-public:
-	grid(int height, int width, int colours);
-	~grid();
-	uint8_t GetColour() const { return 0b01111111 & colour; }
-	bool IsPath() const { return (colour & 0b10000000) != 0; }
-	void SetColour(uint8_t _colour) { colour = _colour; }
-	void SetPath(uint8_t _colour) { colour = _colour | 0b10000000; }
-public:
 	grid* top = nullptr;
 	grid* left = nullptr;
 	grid* bottom = nullptr;
 	grid* right = nullptr;
+	bool path = false;
+	bool node = false;
+public:
+	grid(int height, int width, int colours);
+	~grid();
+	uint8_t GetColour() const { return 0b01111111 & colour; }
+	bool IsPath() const { return path; }
+	bool IsNode() const { return node; }
+	void SetColour(uint8_t _colour) { if (!node) colour = _colour; }
+	void SetPath(uint8_t _colour) {
+		if (!node)
+		{
+			path = true;
+			colour = _colour; }
+	}
+	void UnsetPath() { path = false; }
+	grid* GetTop(){ return top; }
+	grid* GetLeft() { return left; }
+	grid* GetBottom() { return bottom; }
+	grid* GetRight() { return right; }
+
+	bool IsFinal(grid* prevcell);
+	bool IsAdjacent(grid* prevcell);
+	bool IsHorizontallyAdjacent(grid* prevcell);
+	bool IsVerticallyAdjacent(grid* prevcell);
+	bool IsTakeBack(grid* prevcell);
+	bool IsLink(grid* prevcell);
+public:
 	grid* operator++();
 	grid* operator--();
 };

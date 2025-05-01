@@ -68,12 +68,6 @@ private:
 	void DrawGrid();
 	grid* GetCell(int x, int y);
 	void DrawEmptyCell(int x, int y);
-	bool IsFinal(grid* curcell, grid* prevcell);
-	bool IsAdjacent(grid* curcell, grid* prevcell);
-	bool IsHorizontallyAdjacent(grid* curcell, grid* prevcell);
-	bool IsVerticallyAdjacent(grid* curcell, grid* prevcell);
-	bool IsTakeBack(grid* curcell, grid* prevcell);
-	bool IsLink(grid* curcell, grid* prevcell);
 	void FillFlow(int x, int y, int xprev, int yprev);
 	bool GetCellCenter(const int xscr, const int yscr, std::pair<int, int> & coord);
 	void ClearPath(grid* cell);
