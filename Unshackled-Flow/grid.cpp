@@ -1,109 +1,6 @@
 #include "grid.hpp"
 
-void grid::populate(grid* topleftcorner, int colours)
-{
-	int cellscount = 0;
-	for(grid* cur = topleftcorner; nullptr != cur; cur = ++ (*cur))
-		++cellscount;
-	std::vector<int> vAvailable;
-	for (int i = 1; i <= colours; ++i, --cellscount)
-		vAvailable.emplace_back(i);
-	for (int i = 1; i <= colours; ++i, --cellscount)
-		vAvailable.emplace_back(i);
-	for(int i = 0; i < cellscount; ++i)
-		vAvailable.emplace_back(0);
-
-	static std::random_device r;
-	static std::mt19937 e1(r());
-	std::shuffle(vAvailable.begin(), vAvailable.end(), e1);
-
-	for (grid* cur = topleftcorner; nullptr != cur;)
-	{
-		cur->colour = vAvailable.back();
-		vAvailable.pop_back();
-		cur = ++ (*cur);
-	}
-}
-
-void grid::init(grid * topleftcorner, int height, int width)
-{
-	grid* firstcell = topleftcorner;
-	for (int y = 0; y < height; ++y)
-	{
-		addrow(firstcell, width);
-		if(y < height - 1)
-		{
-			firstcell->bottom = new grid();
-			firstcell->bottom->top = firstcell;
-			firstcell = firstcell->bottom;
-		}
-	}
-}
-
-void grid::addrow(grid* firstleftcell, int width)
-{
-	grid* curcell = firstleftcell;
-	for (int x = 0; x < width - 1; ++x)
-	{
-		curcell->right = new grid();
-		curcell->right->left = curcell;
-		if (nullptr != curcell->top && nullptr != curcell->top->right)
-		{
-			curcell->right->top = curcell->top->right;
-			curcell->top->right->bottom = curcell->right;
-		}
-		curcell = curcell->right;
-	}
-}
-
-void grid::populate(int colours)
-{
-	int cellscount = 0;
-	for (grid* cur = this; nullptr != cur; cur = ++ (*cur))
-		++cellscount;
-	std::vector<int> vAvailable;
-	for (int i = 1; i <= colours; ++i, --cellscount)
-		vAvailable.emplace_back(i);
-	for (int i = 1; i <= colours; ++i, --cellscount)
-		vAvailable.emplace_back(i);
-	for (int i = 0; i < cellscount; ++i)
-		vAvailable.emplace_back(0);
-
-	static std::random_device r;
-	static std::mt19937 e1(r());
-	std::shuffle(vAvailable.begin(), vAvailable.end(), e1);
-
-	for (grid* cur = this; nullptr != cur;)
-	{
-		cur->colour = vAvailable.back();
-		cur->node = vAvailable.back() != 0;
-		vAvailable.pop_back();
-		cur = ++ (*cur);
-	}
-}
-
-void grid::init(int height, int width)
-{
-	grid* firstcell = this;
-	for (int y = 0; y < height; ++y)
-	{
-		addrow(firstcell, width);
-		if (y < height - 1)
-		{
-			firstcell->bottom = new grid();
-			firstcell->bottom->top = firstcell;
-			firstcell = firstcell->bottom;
-		}
-	}
-}
-
-grid::grid(int height, int width, int colours)
-{
-	this->init(height, width);
-	this->populate(colours);
-}
-
-grid::~grid()
+Cell::~Cell()
 {
 	//if (nullptr != top) delete top;
 	//if (nullptr != left) delete left;
@@ -123,13 +20,13 @@ grid::~grid()
 #endif // _DEBUG
 }
 
-grid* grid::operator++()
+Cell* Cell::operator++()
 {
 	if (nullptr != right)
 		return right;
 	else if (nullptr != this->left)
 	{
-		grid* cur = this->left;
+		Cell* cur = this->left;
 		while (nullptr != cur->left)
 			cur = cur->left;
 		return cur->bottom;
@@ -138,13 +35,13 @@ grid* grid::operator++()
 		return nullptr;
 }
 
-grid* grid::operator--()
+Cell* Cell::operator--()
 {
 	if (nullptr != left)
 		return left;
 	else if (nullptr != this->right)
 	{
-		grid* cur = this->right;
+		Cell* cur = this->right;
 		while (nullptr != cur->right)
 			cur = cur->right;
 		return cur->top;
@@ -153,7 +50,7 @@ grid* grid::operator--()
 		return nullptr;
 }
 
-bool grid::IsAdjacent(grid* prevcell)
+bool Cell::IsAdjacent(Cell* prevcell)
 {
 	return (
 		nullptr != prevcell &&
@@ -166,7 +63,7 @@ bool grid::IsAdjacent(grid* prevcell)
 		);
 }
 
-bool grid::IsHorizontallyAdjacent(grid* prevcell)
+bool Cell::IsHorizontallyAdjacent(Cell* prevcell)
 {
 	return (
 		nullptr != prevcell &&
@@ -177,7 +74,7 @@ bool grid::IsHorizontallyAdjacent(grid* prevcell)
 		);
 }
 
-bool grid::IsVerticallyAdjacent(grid* prevcell)
+bool Cell::IsVerticallyAdjacent(Cell* prevcell)
 {
 	return (
 		nullptr != prevcell &&
@@ -188,7 +85,7 @@ bool grid::IsVerticallyAdjacent(grid* prevcell)
 		);
 }
 
-bool grid::IsTakeBack(grid* prevcell)
+bool Cell::IsTakeBack(Cell* prevcell)
 {
 	bool bRet = false;
 	if (nullptr != prevcell && prevcell->colour == colour)
@@ -233,7 +130,7 @@ bool grid::IsTakeBack(grid* prevcell)
 	return bRet;
 }
 
-bool grid::IsLink(grid* prevcell)
+bool Cell::IsLink(Cell* prevcell)
 {
 	bool bRet = false;
 	if (nullptr != prevcell && prevcell->colour == colour)
@@ -268,7 +165,7 @@ bool grid::IsLink(grid* prevcell)
 	return bRet;
 }
 
-bool grid::IsFinal(grid* prevcell)
+bool Cell::IsFinal(Cell* prevcell)
 {
 	return prevcell != nullptr &&
 		(top == nullptr || top->colour != colour || top == prevcell) &&
@@ -278,13 +175,13 @@ bool grid::IsFinal(grid* prevcell)
 		;
 }
 
-void grid::GetLongestPath(grid* cell, std::vector<grid*>& longestpath)
+void Grid::GetLongestPath(Cell* cell, std::vector<Cell*>& longestpath)
 {
-	std::vector<grid*> currenpath;
+	std::vector<Cell*> currenpath;
 	GetLongestPath(cell, currenpath, longestpath);
 }
 
-void grid::GetLongestPath(grid* cell, std::vector<grid*>& currenpath, std::vector<grid*>& longestpath)
+void Grid::GetLongestPath(Cell* cell, std::vector<Cell*>& currenpath, std::vector<Cell*>& longestpath)
 {
 	if (currenpath.end() != std::find(currenpath.begin(), currenpath.end(), cell))
 		return;
@@ -306,13 +203,13 @@ void grid::GetLongestPath(grid* cell, std::vector<grid*>& currenpath, std::vecto
 		currenpath.pop_back();
 }
 
-void grid::GetShortestPath(grid* cell, std::vector<grid*>& shortestpath)
+void Grid::GetShortestPath(Cell* cell, std::vector<Cell*>& shortestpath)
 {
-	std::vector<grid*> currenpath;
+	std::vector<Cell*> currenpath;
 	GetShortestPath(cell, currenpath, shortestpath);
 }
 
-void grid::GetShortestPath(grid* cell, std::vector<grid*>& currenpath, std::vector<grid*>& shortestpath)
+void Grid::GetShortestPath(Cell* cell, std::vector<Cell*>& currenpath, std::vector<Cell*>& shortestpath)
 {
 	if (currenpath.end() != std::find(currenpath.begin(), currenpath.end(), cell))
 		return;
@@ -334,13 +231,13 @@ void grid::GetShortestPath(grid* cell, std::vector<grid*>& currenpath, std::vect
 		currenpath.pop_back();
 }
 
-void grid::GetOrphanPath(grid* cell, std::vector<grid*>& orphanPath)
+void Grid::GetOrphanPath(Cell* cell, std::vector<Cell*>& orphanPath)
 {
-	std::vector<grid*> currenpath;
+	std::vector<Cell*> currenpath;
 	GetOrphanPath(nullptr, cell, currenpath, orphanPath);
 }
 
-void grid::GetFullPathFromNode(grid* cell, std::vector<grid*>& fullPath)
+void Grid::GetFullPathFromNode(Cell* cell, std::vector<Cell*>& fullPath)
 {
 	if (fullPath.end() != std::find(fullPath.begin(), fullPath.end(), cell))
 		return;
@@ -356,7 +253,7 @@ void grid::GetFullPathFromNode(grid* cell, std::vector<grid*>& fullPath)
 	}
 }
 
-void grid::GetOrphanPath(grid* prevcell, grid* cell, std::vector<grid*>& currenpath, std::vector<grid*>& orphanPath)
+void Grid::GetOrphanPath(Cell* prevcell, Cell* cell, std::vector<Cell*>& currenpath, std::vector<Cell*>& orphanPath)
 {
 	if (currenpath.end() != std::find(currenpath.begin(), currenpath.end(), cell))
 		return;
@@ -381,7 +278,7 @@ void grid::GetOrphanPath(grid* prevcell, grid* cell, std::vector<grid*>& currenp
 	}
 }
 
-void grid::ClearPathFromNode(grid* cell, std::vector<grid*>& clearedPath)
+void Grid::ClearPathFromNode(Cell* cell, std::vector<Cell*>& clearedPath)
 {
 	GetFullPathFromNode(cell, clearedPath);
 	for (const auto& curcell : clearedPath)
@@ -391,7 +288,7 @@ void grid::ClearPathFromNode(grid* cell, std::vector<grid*>& clearedPath)
 	}
 }
 
-void grid::ClearRelevantPath(grid* cell, std::vector<grid*>& clearedPath)
+void Grid::ClearRelevantPath(Cell* cell, std::vector<Cell*>& clearedPath)
 {
 	GetOrphanPath(cell, clearedPath);
 	if (clearedPath.empty())
@@ -401,4 +298,101 @@ void grid::ClearRelevantPath(grid* cell, std::vector<grid*>& clearedPath)
 		if (curcell->IsPath())
 			curcell->UnsetPath();
 	}
+}
+
+void Grid::Populate(uint8_t colours) const
+{
+	int cellscount = 0;
+	for (Cell* cur = this->startingPoint; nullptr != cur; cur = ++ (*cur))
+		++cellscount;
+	std::vector<int> vAvailable;
+	for (int i = 1; i <= colours; ++i, --cellscount)
+		vAvailable.emplace_back(i);
+	for (int i = 1; i <= colours; ++i, --cellscount)
+		vAvailable.emplace_back(i);
+	for (int i = 0; i < cellscount; ++i)
+		vAvailable.emplace_back(0);
+
+	static std::random_device r;
+	static std::mt19937 e1(r());
+	std::shuffle(vAvailable.begin(), vAvailable.end(), e1);
+
+	for (Cell* cur = this->startingPoint; nullptr != cur;)
+	{
+		cur->colour = vAvailable.back();
+		cur->node = vAvailable.back() != 0;
+		vAvailable.pop_back();
+		cur = ++ (*cur);
+	}
+}
+
+void Grid::Addrow(Cell* firstleftcell, int width)
+{
+	Cell* curcell = firstleftcell;
+	for (int x = 0; x < width - 1; ++x)
+	{
+		curcell->right = new Cell();
+		curcell->right->left = curcell;
+		if (nullptr != curcell->top && nullptr != curcell->top->right)
+		{
+			curcell->right->top = curcell->top->right;
+			curcell->top->right->bottom = curcell->right;
+		}
+		curcell = curcell->right;
+	}
+}
+
+void Grid::Init(int width, int height)
+{
+	this->startingPoint = new Cell();
+	Cell* firstcell = this->startingPoint;
+	for (int y = 0; y < height; ++y)
+	{
+		Addrow(firstcell, width);
+		if (y < height - 1)
+		{
+			firstcell->bottom = new Cell();
+			firstcell->bottom->top = firstcell;
+			firstcell = firstcell->bottom;
+		}
+	}
+}
+
+Grid::Grid(int width, int height, uint8_t colours) : startingPoint(nullptr)
+{
+	Init(width, height);
+	Populate(colours);
+
+	int x = 0;
+	int y = 0;
+	auto curcell = startingPoint;
+
+	arrCoordinatesToCell.release();
+	arrCoordinatesToCell = std::make_unique <std::unique_ptr<Cell * []>[]>(width);
+	for (int i = 0; i < width; ++i) {
+		arrCoordinatesToCell.get()[i] = std::make_unique<Cell * []>(height);
+	}
+
+	mCellToCoordinates.clear();
+	while (nullptr != curcell)
+	{
+		auto firstin = curcell;
+		x = 0;
+		while (nullptr != curcell)
+		{
+			arrCoordinatesToCell[x][y] = curcell;
+			mCellToCoordinates[curcell] = std::pair<int, int>(x, y);
+
+			curcell = curcell->GetRight();
+			++x;
+		}
+		curcell = firstin->GetBottom();
+		++y;
+	}
+}
+
+Grid::~Grid()
+{
+	if (nullptr != startingPoint)
+		delete startingPoint;
 }

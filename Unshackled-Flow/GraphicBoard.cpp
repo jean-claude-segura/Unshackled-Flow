@@ -91,7 +91,7 @@ void GraphicBoard::Init()
 	xDec = (Width - curWidth) / 2;
 	yDec = (Height - curHeight) / 2;
 
-	Grille = new grid(gHeight, gWidth, 10);
+	Grille = new Grid(gWidth, gHeight, 10);
 
 	int xOrg = xDec;
 	int yOrg = yDec;
@@ -112,35 +112,11 @@ void GraphicBoard::Init()
 
 	int x = 0;
 	int y = 0;
-	auto curcell = Grille;
-
-	arrCoordinatesToCell.release();
-	arrCoordinatesToCell = std::make_unique <std::unique_ptr<grid * []>[]>(gWidth);
-	for (int i = 0; i < gWidth; ++i) {
-		arrCoordinatesToCell.get()[i] = std::make_unique<grid * []>(gHeight);
-	}
-
-	mCellToCoordinates.clear();
-	while (nullptr != curcell)
-	{
-		auto firstin = curcell;
-		x = 0;
-		while (nullptr != curcell)
-		{
-			arrCoordinatesToCell[x][y] = curcell;
-			mCellToCoordinates[curcell] = std::pair<int, int>(x, y);
-
-			curcell = curcell->GetRight();
-			++x;
-		}
-		curcell = firstin->GetBottom();
-		++y;
-	}
 
 	Refresh();
 
 #ifdef _DEBUG
-	curcell = Grille;
+	auto curcell = Grille->startingPoint;
 	while (nullptr != curcell)
 	{
 		auto firstin = curcell;
@@ -244,7 +220,7 @@ static void FillCircle(SDL_Renderer* renderer, int xOrg, int yOrg, double radius
 	}
 }
 
-void GraphicBoard::SetDrawColour(grid* curcell)
+void GraphicBoard::SetDrawColour(Cell* curcell)
 {
 	// Cell is other colour node  :
 	const auto& colour = arrColours[curcell->GetColour()];
@@ -278,7 +254,7 @@ void GraphicBoard::DrawGrid()
 
 	int x = 0;
 	int y = 0;
-	auto curcell = Grille;
+	auto curcell = Grille->startingPoint;
 
 	while (nullptr != curcell)
 	{
@@ -320,9 +296,9 @@ void GraphicBoard::DrawGrid()
 	SDL_RenderPresent(renderer);
 }
 
-grid* GraphicBoard::GetCell(int xscr, int yscr)
+Cell* GraphicBoard::GetCell(int xscr, int yscr)
 {
-	grid* curcell = nullptr;
+	Cell* curcell = nullptr;
 
 	if(xscr > xDec && xscr < (curWidth + xDec) && yscr > yDec && yscr < (curHeight + yDec))
 	{
@@ -332,15 +308,15 @@ grid* GraphicBoard::GetCell(int xscr, int yscr)
 		int y = yscr - yDec;
 		y /= side;
 
-		curcell = arrCoordinatesToCell[x][y];
+		curcell = Grille->arrCoordinatesToCell[x][y];
 	}
 
 	return curcell;
 }
 
-void GraphicBoard::DrawEmptyCell(grid* cell)
+void GraphicBoard::DrawEmptyCell(Cell* cell)
 {
-	const auto it = mCellToCoordinates.find(cell);
+	const auto it = Grille->mCellToCoordinates.find(cell);
 	const auto& cellCoord = it->second;
 	
 	int xscr = cellCoord.first * side + xDec + side / 2 + 1;
@@ -505,9 +481,9 @@ bool GraphicBoard::GetCellCenter(const int xscr, const int yscr, std::pair<int, 
 	return bRet;
 }
 
-void GraphicBoard::DrawNode(grid* cell)
+void GraphicBoard::DrawNode(Cell* cell)
 {
-	const auto it = mCellToCoordinates.find(cell);
+	const auto it = Grille->mCellToCoordinates.find(cell);
 	const auto& cellCoord = it->second;
 	
 	int x = cellCoord.first * side + xDec + side / 2 + 1;
@@ -517,10 +493,10 @@ void GraphicBoard::DrawNode(grid* cell)
 	FillCircle(renderer, x, y, NODERADIUS);
 }
 
-void GraphicBoard::ClearPathFromNode(grid* cell)
+void GraphicBoard::ClearPathFromNode(Cell* cell)
 {
-	std::vector<grid*> fullPath;
-	grid::ClearPathFromNode(cell, fullPath);
+	std::vector<Cell*> fullPath;
+	Grid::ClearPathFromNode(cell, fullPath);
 	for (const auto& curcell : fullPath)
 	{
 		DrawEmptyCell(curcell);
@@ -529,10 +505,10 @@ void GraphicBoard::ClearPathFromNode(grid* cell)
 	}
 }
 
-void GraphicBoard::ClearRelevantPath(grid* cell)
+void GraphicBoard::ClearRelevantPath(Cell* cell)
 {
-	std::vector<grid*> relevantpath;
-	grid::ClearRelevantPath(cell, relevantpath);
+	std::vector<Cell*> relevantpath;
+	Grid::ClearRelevantPath(cell, relevantpath);
 	for (const auto& curcell : relevantpath)
 	{
 		DrawEmptyCell(curcell);

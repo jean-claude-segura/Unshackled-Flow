@@ -67,15 +67,15 @@ private:
 	void Init();
 	void ThrowException(const int i);
 	void Refresh();
-	void SetDrawColour(grid* curcell);
+	void SetDrawColour(Cell* curcell);
 	void DrawGrid();
-	grid* GetCell(int x, int y);
-	void DrawEmptyCell(grid* cell);
+	Cell* GetCell(int x, int y);
+	void DrawEmptyCell(Cell* cell);
 	void FillFlow(int x, int y, int xprev, int yprev);
 	bool GetCellCenter(const int xscr, const int yscr, std::pair<int, int> & coord);
-	void DrawNode(grid* cell);
-	void ClearPathFromNode(grid* cell);
-	void ClearRelevantPath(grid* cell);
+	void DrawNode(Cell* cell);
+	void ClearPathFromNode(Cell* cell);
+	void ClearRelevantPath(Cell* cell);
 public:
 	GraphicBoard();
 	~GraphicBoard();
@@ -85,13 +85,11 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	int Height, Width;
-	grid* Grille;
+	Grid* Grille;
 	SDL_Event exitEvent;
 	int side;
 	int gHeight, gWidth, clientHeight, clientWidth;
 	int curWidth, curHeight, xDec, yDec;
 
 	double Ratio = 0.7;
-	std::map<grid* , std::pair<int, int>> mCellToCoordinates;
-	std::unique_ptr<std::unique_ptr<grid*[]>[]> arrCoordinatesToCell;
 };
