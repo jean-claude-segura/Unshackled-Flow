@@ -10,7 +10,7 @@ private:
 	static void populate(grid* topleftcorner, int colours);
 	static void init(grid* topleftcorner, int height, int width);
 	static void addrow(grid* topleftcorner, int width);
-public:
+
 	static void GetLongestPath(grid* cell, std::vector<grid*>& shortestpath);
 	static void GetLongestPath(grid* cell, std::vector<grid*>& currenpath, std::vector<grid*>& shortestpath);
 	static void GetShortestPath(grid* cell, std::vector<grid*>& shortestpath);
@@ -18,6 +18,9 @@ public:
 	static void GetOrphanPath(grid* cell, std::vector<grid*>& Orphanpath);
 	static void GetFullPathFromNode(grid* cell, std::vector<grid*>& fullPath);
 	static void GetOrphanPath(grid* prevcell, grid* cell, std::vector<grid*>& currenpath, std::vector<grid*>& Orphanpath);
+public:
+	static void ClearPathFromNode(grid* cell, std::vector<grid*>& clearedPath);
+	static void ClearRelevantPath(grid* cell, std::vector<grid*>& clearedPath);
 private:
 	grid() {};
 	void populate(int colours);

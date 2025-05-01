@@ -380,3 +380,25 @@ void grid::GetOrphanPath(grid* prevcell, grid* cell, std::vector<grid*>& currenp
 			currenpath.pop_back();
 	}
 }
+
+void grid::ClearPathFromNode(grid* cell, std::vector<grid*>& clearedPath)
+{
+	GetFullPathFromNode(cell, clearedPath);
+	for (const auto& curcell : clearedPath)
+	{
+		if (curcell->IsPath())
+			curcell->UnsetPath();
+	}
+}
+
+void grid::ClearRelevantPath(grid* cell, std::vector<grid*>& clearedPath)
+{
+	GetOrphanPath(cell, clearedPath);
+	if (clearedPath.empty())
+		GetShortestPath(cell, clearedPath);
+	for (const auto& curcell : clearedPath)
+	{
+		if (curcell->IsPath())
+			curcell->UnsetPath();
+	}
+}

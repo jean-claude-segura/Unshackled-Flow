@@ -394,7 +394,7 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 		if (prevcell->IsNode())
 		{
 			// Restart :
-			ClearPath(prevcell);
+			ClearPathFromNode(prevcell);
 		}
 
 		// Take back :
@@ -450,7 +450,7 @@ void GraphicBoard::FillFlow(int x, int y, int xprev, int yprev)
 					else
 					{
 						// Restart :
-						ClearPath(curcell);
+						ClearPathFromNode(curcell);
 					}
 				}
 				else
@@ -489,18 +489,15 @@ bool GraphicBoard::GetCellCenter(const int xscr, const int yscr, std::pair<int, 
 {
 	bool bRet = false;
 
-	int xOrg = xDec;
-	int yOrg = yDec;
-
-	if (xscr > xOrg && xscr < (curWidth + xOrg) && yscr > yOrg && yscr < (curHeight + yOrg))
+	if (xscr > xDec && xscr < (curWidth + xDec) && yscr > yDec && yscr < (curHeight + yDec))
 	{
-		int x = xscr - xOrg;
+		int x = xscr - xDec;
 		x /= side;
 
-		int y = yscr - yOrg;
+		int y = yscr - yDec;
 		y /= side;
 
-		coord = std::make_pair<int, int>(x * side + xOrg + side / 2 + 1, y * side + yOrg + side / 2 + 1);
+		coord = std::make_pair<int, int>(x * side + xDec + side / 2 + 1, y * side + yDec + side / 2 + 1);
 
 		bRet = true;
 	}
@@ -510,29 +507,24 @@ bool GraphicBoard::GetCellCenter(const int xscr, const int yscr, std::pair<int, 
 
 void GraphicBoard::DrawNode(grid* cell)
 {
-	int xOrg = xDec;
-	int yOrg = yDec;
-
 	const auto it = mCellToCoordinates.find(cell);
 	const auto& cellCoord = it->second;
 	
-	int x = cellCoord.first * side + xOrg + side / 2 + 1;
-	int y = cellCoord.second * side + yOrg + side / 2 + 1;
+	int x = cellCoord.first * side + xDec + side / 2 + 1;
+	int y = cellCoord.second * side + yDec + side / 2 + 1;
 
 	SetDrawColour(cell);
 	FillCircle(renderer, x, y, NODERADIUS);
 }
 
-void GraphicBoard::ClearPath(grid* cell)
+void GraphicBoard::ClearPathFromNode(grid* cell)
 {
 	std::vector<grid*> fullPath;
-	grid::GetFullPathFromNode(cell, fullPath);
+	grid::ClearPathFromNode(cell, fullPath);
 	for (const auto& curcell : fullPath)
 	{
 		DrawEmptyCell(curcell);
-		if (curcell->IsPath())
-			curcell->UnsetPath();
-		else if (curcell->IsNode())
+		if (curcell->IsNode())
 			DrawNode(curcell);
 	}
 }
@@ -540,15 +532,11 @@ void GraphicBoard::ClearPath(grid* cell)
 void GraphicBoard::ClearRelevantPath(grid* cell)
 {
 	std::vector<grid*> relevantpath;
-	grid::GetOrphanPath(cell, relevantpath);
-	if (relevantpath.empty())
-		grid::GetShortestPath(cell, relevantpath);
+	grid::ClearRelevantPath(cell, relevantpath);
 	for (const auto& curcell : relevantpath)
 	{
 		DrawEmptyCell(curcell);
-		if (curcell->IsPath())
-			curcell->UnsetPath();
-		else if (curcell->IsNode())
+		if (curcell->IsNode())
 			DrawNode(curcell);
 	}
 }

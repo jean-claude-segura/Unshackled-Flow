@@ -74,7 +74,7 @@ private:
 	void FillFlow(int x, int y, int xprev, int yprev);
 	bool GetCellCenter(const int xscr, const int yscr, std::pair<int, int> & coord);
 	void DrawNode(grid* cell);
-	void ClearPath(grid* cell);
+	void ClearPathFromNode(grid* cell);
 	void ClearRelevantPath(grid* cell);
 public:
 	GraphicBoard();
