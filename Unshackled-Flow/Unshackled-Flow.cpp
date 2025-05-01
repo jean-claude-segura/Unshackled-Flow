@@ -13,9 +13,6 @@ int main(int argc, char* argv[])
 #else
 		ShowWindow(GetConsoleWindow(), SW_SHOW);
 #endif
-		for (int i = 0; i < argc; ++i)
-			if (std::string("software").compare(argv[i]) == 0)
-				;
 		GraphicBoard plateau;
 		plateau.Loop();
 	}

@@ -14,6 +14,8 @@
 #include <tuple>
 #include <array>
 
+#define NODERADIUS (side / 2. - 2.)
+
 class RedGreenBlue {
 private:
 	Uint8 red;
@@ -65,12 +67,15 @@ private:
 	void Init();
 	void ThrowException(const int i);
 	void Refresh();
+	void SetDrawColour(grid* curcell);
 	void DrawGrid();
 	grid* GetCell(int x, int y);
-	void DrawEmptyCell(int x, int y);
+	void DrawEmptyCell(grid* cell);
 	void FillFlow(int x, int y, int xprev, int yprev);
 	bool GetCellCenter(const int xscr, const int yscr, std::pair<int, int> & coord);
+	void DrawNode(grid* cell);
 	void ClearPath(grid* cell);
+	void ClearRelevantPath(grid* cell);
 public:
 	GraphicBoard();
 	~GraphicBoard();
@@ -84,6 +89,8 @@ private:
 	SDL_Event exitEvent;
 	int side;
 	int gHeight, gWidth, clientHeight, clientWidth;
+	int curWidth, curHeight, xDec, yDec;
+
 	double Ratio = 0.7;
 	std::map<grid* , std::pair<int, int>> mCellToCoordinates;
 	std::unique_ptr<std::unique_ptr<grid*[]>[]> arrCoordinatesToCell;

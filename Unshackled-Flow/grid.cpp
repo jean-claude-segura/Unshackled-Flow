@@ -270,10 +270,113 @@ bool grid::IsLink(grid* prevcell)
 
 bool grid::IsFinal(grid* prevcell)
 {
-	return
+	return prevcell != nullptr &&
 		(top == nullptr || top->colour != colour || top == prevcell) &&
 		(left == nullptr || left->colour != colour || left == prevcell) &&
 		(bottom == nullptr || bottom->colour != colour || bottom == prevcell) &&
 		(right == nullptr || right->colour != colour || right == prevcell)
 		;
+}
+
+void grid::GetLongestPath(grid* cell, std::vector<grid*>& longestpath)
+{
+	std::vector<grid*> currenpath;
+	GetLongestPath(cell, currenpath, longestpath);
+}
+
+void grid::GetLongestPath(grid* cell, std::vector<grid*>& currenpath, std::vector<grid*>& longestpath)
+{
+	if (currenpath.end() != std::find(currenpath.begin(), currenpath.end(), cell))
+		return;
+	currenpath.emplace_back(cell);
+	if (cell->node)
+	{
+		if (!currenpath.empty() && (longestpath.size() < currenpath.size() || longestpath.empty()))
+			longestpath = currenpath;
+	}
+	else if (cell->path)
+	{
+		if (cell->top != nullptr && cell->top->colour == cell->colour) GetLongestPath(cell->top, currenpath, longestpath);
+		if (cell->left != nullptr && cell->left->colour == cell->colour) GetLongestPath(cell->left, currenpath, longestpath);
+		if (cell->bottom != nullptr && cell->bottom->colour == cell->colour) GetLongestPath(cell->bottom, currenpath, longestpath);
+		if (cell->right != nullptr && cell->right->colour == cell->colour) GetLongestPath(cell->right, currenpath, longestpath);
+
+	}
+	if (!currenpath.empty())
+		currenpath.pop_back();
+}
+
+void grid::GetShortestPath(grid* cell, std::vector<grid*>& shortestpath)
+{
+	std::vector<grid*> currenpath;
+	GetShortestPath(cell, currenpath, shortestpath);
+}
+
+void grid::GetShortestPath(grid* cell, std::vector<grid*>& currenpath, std::vector<grid*>& shortestpath)
+{
+	if (currenpath.end() != std::find(currenpath.begin(), currenpath.end(), cell))
+		return;
+	currenpath.emplace_back(cell);
+	if (cell->node)
+	{
+		if (!currenpath.empty() && (shortestpath.size() > currenpath.size() || shortestpath.empty()))
+			shortestpath = currenpath;
+	}
+	else if(cell->path)
+	{
+		if (cell->top != nullptr && cell->top->colour == cell->colour) GetShortestPath(cell->top, currenpath, shortestpath);
+		if (cell->left != nullptr && cell->left->colour == cell->colour) GetShortestPath(cell->left, currenpath, shortestpath);
+		if (cell->bottom != nullptr && cell->bottom->colour == cell->colour) GetShortestPath(cell->bottom, currenpath, shortestpath);
+		if (cell->right != nullptr && cell->right->colour == cell->colour) GetShortestPath(cell->right, currenpath, shortestpath);
+
+	}
+	if (!currenpath.empty())
+		currenpath.pop_back();
+}
+
+void grid::GetOrphanPath(grid* cell, std::vector<grid*>& orphanPath)
+{
+	std::vector<grid*> currenpath;
+	GetOrphanPath(nullptr, cell, currenpath, orphanPath);
+}
+
+void grid::GetFullPathFromNode(grid* cell, std::vector<grid*>& fullPath)
+{
+	if (fullPath.end() != std::find(fullPath.begin(), fullPath.end(), cell))
+		return;
+
+	if (cell->path || cell->node)
+	{
+		fullPath.emplace_back(cell);
+
+		if (cell->top != nullptr && cell->top->colour == cell->colour) GetFullPathFromNode(cell->top, fullPath);
+		if (cell->left != nullptr && cell->left->colour == cell->colour) GetFullPathFromNode(cell->left, fullPath);
+		if (cell->bottom != nullptr && cell->bottom->colour == cell->colour) GetFullPathFromNode(cell->bottom, fullPath);
+		if (cell->right != nullptr && cell->right->colour == cell->colour) GetFullPathFromNode(cell->right, fullPath);
+	}
+}
+
+void grid::GetOrphanPath(grid* prevcell, grid* cell, std::vector<grid*>& currenpath, std::vector<grid*>& orphanPath)
+{
+	if (currenpath.end() != std::find(currenpath.begin(), currenpath.end(), cell))
+		return;
+	if (cell->path)
+	{
+		currenpath.emplace_back(cell);
+
+		if (cell->IsFinal(prevcell))
+		{
+			orphanPath = currenpath;
+		}
+		else
+		{
+			if (cell->top != nullptr && cell->top->colour == cell->colour) GetOrphanPath(cell, cell->top, currenpath, orphanPath);
+			if (cell->left != nullptr && cell->left->colour == cell->colour) GetOrphanPath(cell, cell->left, currenpath, orphanPath);
+			if (cell->bottom != nullptr && cell->bottom->colour == cell->colour) GetOrphanPath(cell, cell->bottom, currenpath, orphanPath);
+			if (cell->right != nullptr && cell->right->colour == cell->colour) GetOrphanPath(cell, cell->right, currenpath, orphanPath);
+		}
+
+		if (!currenpath.empty())
+			currenpath.pop_back();
+	}
 }
